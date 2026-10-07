@@ -11,6 +11,17 @@ as $$
   select extensions.unaccent('extensions.unaccent'::regdictionary, p_text)
 $$;
 
+-- Strips leading and trailing whitespace, including non-breaking and zero-width spaces.
+create function app.trim_text(p_text text)
+returns text
+language sql
+immutable
+parallel safe
+set search_path = ''
+as $$
+  select regexp_replace(p_text, '^[\s   ﻿]+|[\s   ﻿]+$', '', 'g')
+$$;
+
 -- Lowercase, unaccented, single spaced "first last". Used for search and duplicates.
 create function app.normalize_name(p_first text, p_last text)
 returns text
@@ -22,7 +33,7 @@ as $$
   select nullif(
     trim(regexp_replace(
       app.immutable_unaccent(lower(coalesce(p_first, '') || ' ' || coalesce(p_last, ''))),
-      '\s+', ' ', 'g')),
+      '[\s   ﻿]+', ' ', 'g')),
     '')
 $$;
 
@@ -61,9 +72,9 @@ language plpgsql
 set search_path = ''
 as $$
 begin
-  new.first_name := trim(new.first_name);
-  new.last_name := nullif(trim(new.last_name), '');
-  new.region := nullif(trim(new.region), '');
+  new.first_name := app.trim_text(new.first_name);
+  new.last_name := nullif(app.trim_text(new.last_name), '');
+  new.region := nullif(app.trim_text(new.region), '');
   if new.birth_date > app.today() then
     raise exception using errcode = 'P0001', message = 'validation';
   end if;
