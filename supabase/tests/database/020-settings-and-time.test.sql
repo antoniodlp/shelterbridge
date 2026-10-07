@@ -1,5 +1,5 @@
 begin;
-select plan(12);
+select plan(14);
 
 select tests.create_user('t-admin@example.test', 'admin');
 select tests.create_user('t-volunteer@example.test', 'volunteer');
@@ -31,6 +31,8 @@ select throws_ok(
 select lives_ok(
   $$update public.settings set value = '"America/Tijuana"' where key = 'timezone'$$,
   'an admin can change the timezone');
+select is(app.shelter_timezone(), 'America/Tijuana', 'the shelter timezone comes from settings');
+select is(app.local_date('2026-01-01 07:30:00+00'), date '2025-12-31', 'local dates follow the configured timezone');
 
 select tests.authenticate_as_anon();
 select throws_ok($$select count(*) from public.settings$$, '42501', null, 'anon has no access');
