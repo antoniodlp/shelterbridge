@@ -10,7 +10,7 @@ The main purpose is to manage the people staying at the shelter and their needs.
 
 ## Status
 
-The project is in the design phase, with no application code yet.
+The database for sub-project 1 is implemented and tested (Plan 1). The web app comes next.
 
 - Spec for sub-project 1: [docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md](docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md)
 - Implementation plans go in `docs/superpowers/plans/`.
@@ -43,7 +43,19 @@ docs/       superpowers/specs/, superpowers/plans/
 
 ## Commands
 
-There are none yet. Add them here once the project is scaffolded.
+Docker Desktop must be running for every `db:*` script.
+
+```bash
+npm install                                        # installs the Supabase CLI
+npm run db:start                                   # starts local Supabase (Studio: http://127.0.0.1:54323)
+npm run db:reset                                   # rebuilds the local database from migrations and seed.sql
+npm run db:test                                    # runs the pgTAP tests in supabase/tests/database
+npm run db:lint                                    # checks SQL functions for errors
+npm run db:stop                                    # stops local Supabase
+node supabase/scripts/generate-countries-migration.mjs   # regenerates the countries data migration
+```
+
+Local dev users (password `shelterbridge-dev`): `admin@`, `legal@`, `psychology@` and `volunteer@shelterbridge.test`. Auth emails go to Mailpit at http://127.0.0.1:54324.
 
 ## Rules
 

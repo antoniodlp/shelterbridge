@@ -6,7 +6,7 @@ It is being built for FM4 Paso Libre, a migrant shelter in Guadalajara, Mexico. 
 
 ## Status
 
-The project is in early design, and there is no usable app yet. The design for the first part is in [docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md](docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md).
+The database for the first part is built and tested. The web app is next. The design is in [docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md](docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md).
 
 ## What the first version will do
 
@@ -56,7 +56,18 @@ docs/       design specs and implementation plans
 
 ## Development
 
-Setup instructions will be added once the project is scaffolded. Local development will use the Supabase CLI (which runs on Docker) and Node.js.
+You need Node.js 20 or later and Docker Desktop.
+
+```bash
+npm install
+npm run db:start
+npm run db:reset
+npm run db:test
+```
+
+`db:start` prints the local URLs. The database admin UI (Supabase Studio) is at http://127.0.0.1:54323.
+
+For local testing there are four made-up users, all with the password `shelterbridge-dev`: `admin@shelterbridge.test`, `legal@shelterbridge.test`, `psychology@shelterbridge.test` and `volunteer@shelterbridge.test`.
 
 ## Privacy
 
