@@ -16,7 +16,9 @@ begin
 end;
 $$;
 
--- Opens a stay. Concurrent check-ins from two computers end in already_checked_in.
+-- Opens a stay. The exclusion constraint rejects a second open stay. The handler
+-- reports already_checked_in when the person already has an open stay (including
+-- when two computers check in at the same time), otherwise overlapping_stays.
 create function app.insert_stay(p_person_id uuid, p_stay jsonb)
 returns uuid
 language plpgsql
@@ -25,9 +27,6 @@ as $$
 declare
   v_stay_id uuid;
 begin
-  if exists (select 1 from public.stays s where s.person_id = p_person_id and s.exit_date is null) then
-    raise exception using errcode = 'P0001', message = 'already_checked_in';
-  end if;
   insert into public.stays (person_id, entry_date, case_type_code, bed, phone_status, notes)
   values (
     p_person_id,
@@ -42,6 +41,9 @@ exception
   when unique_violation then
     raise exception using errcode = 'P0001', message = 'already_checked_in';
   when exclusion_violation then
+    if exists (select 1 from public.stays s where s.person_id = p_person_id and s.exit_date is null) then
+      raise exception using errcode = 'P0001', message = 'already_checked_in';
+    end if;
     raise exception using errcode = 'P0001', message = 'overlapping_stays';
 end;
 $$;

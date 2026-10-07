@@ -1,5 +1,5 @@
 begin;
-select plan(22);
+select plan(23);
 
 select tests.create_user('t-volunteer@example.test', 'volunteer');
 select tests.create_user('t-norole@example.test');
@@ -77,6 +77,10 @@ select throws_ok(
   $$select public.check_in('00000000-0000-4000-8000-000000000602', '{}'::jsonb)$$,
   'P0001', 'not_found',
   'a merged person cannot check in');
+select throws_ok(
+  $$select public.check_in('00000000-0000-4000-8000-000000000699', '{}'::jsonb)$$,
+  'P0001', 'not_found',
+  'an unknown person cannot check in');
 select throws_ok(
   $$select public.check_in(
       '00000000-0000-4000-8000-000000000603',
