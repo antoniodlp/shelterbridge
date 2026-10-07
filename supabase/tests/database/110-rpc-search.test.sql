@@ -1,5 +1,5 @@
 begin;
-select plan(13);
+select plan(18);
 
 select tests.create_user('t-volunteer@example.test', 'volunteer');
 select tests.create_user('t-norole@example.test');
@@ -9,7 +9,9 @@ insert into public.people (id, first_name, last_name, birth_date, country_code) 
   ('00000000-0000-4000-8000-000000000802', 'Wenceslao', 'Ybarra', date '1985-01-01', 'GT'),
   ('00000000-0000-4000-8000-000000000803', 'Wenceslao', 'Ybarra', date '1999-09-09', 'GT'),
   ('00000000-0000-4000-8000-000000000804', 'Quirino', null, null, 'NI'),
-  ('00000000-0000-4000-8000-000000000805', 'Xiomara', 'Zuluaga Ñáñez', date '1990-03-07', 'HN');
+  ('00000000-0000-4000-8000-000000000805', 'Xiomara', 'Zuluaga Ñáñez', date '1990-03-07', 'HN'),
+  ('00000000-0000-4000-8000-000000000806', 'Ana', 'Aguilar', date '1992-05-05', 'SV'),
+  ('00000000-0000-4000-8000-000000000807', 'X', null, null, 'HN');
 update public.people set merged_into_id = '00000000-0000-4000-8000-000000000801'
 where id = '00000000-0000-4000-8000-000000000805';
 insert into public.stays (person_id, entry_date)
@@ -49,6 +51,10 @@ select is(
   (select count(*)::int from public.find_possible_duplicates('X', null)),
   0,
   'a one-letter name returns no suggestions');
+select is(
+  (select count(*)::int from public.find_possible_duplicates('x.', null)),
+  0,
+  'a name with one letter and punctuation returns no suggestions');
 
 select is(
   (select person_id from public.search_people('ñáñez') limit 1),
@@ -61,6 +67,10 @@ select is(
   'search reports an open stay');
 select is((select count(*)::int from public.search_people('%%')), 0, 'wildcards are treated as text');
 select is((select count(*)::int from public.search_people('a')), 0, 'a one-letter search returns nothing');
+select is((select count(*)::int from public.search_people(chr(92) || 'a')), 0, 'a backslash and one letter returns nothing');
+select is((select count(*)::int from public.search_people('a%')), 0, 'one letter and a wildcard returns nothing');
+select is((select count(*)::int from public.search_people('a_')), 0, 'one letter and an underscore returns nothing');
+select is((select count(*)::int from public.search_people('a.')), 0, 'one letter and a period returns nothing');
 select is(
   (select count(*)::int from public.search_people('zuluaga')
    where person_id = '00000000-0000-4000-8000-000000000805'),

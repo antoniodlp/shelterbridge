@@ -27,7 +27,7 @@ declare
   v_q2 text := app.normalize_name(p_last_name, p_first_name);
 begin
   perform app.require_role();
-  if v_q1 is null or length(v_q1) < 2 then
+  if v_q1 is null or length(regexp_replace(v_q1, '[^[:alnum:]]', '', 'g')) < 2 then
     return;
   end if;
   return query
@@ -106,10 +106,10 @@ declare
   v_like text;
 begin
   perform app.require_role();
-  if v_q is null or length(v_q) < 2 then
+  if v_q is null or length(regexp_replace(v_q, '[^[:alnum:]]', '', 'g')) < 2 then
     return;
   end if;
-  v_like := '%' || replace(replace(replace(v_q, '\', '\'), '%', '\%'), '_', '\_') || '%';
+  v_like := '%' || replace(replace(replace(v_q, '\', '\\'), '%', '\%'), '_', '\_') || '%';
   return query
   select
     p.id,
