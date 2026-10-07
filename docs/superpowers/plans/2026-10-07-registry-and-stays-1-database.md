@@ -3509,12 +3509,12 @@ The web plans consume exactly this surface through `web/src/api/`.
 
 **Tables (via PostgREST)**
 - **`app_users`:**
-  - admin: full read and write;
+  - admin: reads every row, invites (insert) and updates; there is no delete, deactivate instead;
   - everyone else: reads only their own row, to learn their role.
 - **`settings`:** read by everyone; written by admin.
 - **`countries`, `case_types`, `genders`:** read by everyone; insert and update by admin.
-- **`people`:** select, insert and update for everyone. Use `updated_at` for optimistic concurrency.
-- **`stays`, `outings`:** select and update for everyone; delete by admin only. Use `updated_at` for optimistic concurrency.
+- **`people`:** select, insert and update for everyone, except that only an admin may set `merged_into_id` (hardening migration 20261007001400). Use `updated_at` for optimistic concurrency.
+- **`stays`, `outings`:** select, insert and update for everyone (normal inserts go through the RPCs); only an admin may change `stays.person_id`; delete by admin only. Use `updated_at` for optimistic concurrency.
 - **`audit_log`:** admin read only.
 
 **View**

@@ -252,7 +252,7 @@ Age is **never stored**. It is calculated as `date_part('year', age(app.today(),
 
 **Constraints:**
 - `UNIQUE (person_id) WHERE exit_date IS NULL` allows at most one open stay per person.
-- `EXCLUDE USING gist (person_id WITH =, daterange(entry_date, exit_date, '[)') WITH &&)` prevents overlapping stays. An open stay is treated as having no end date. The range excludes the exit date, so a person checked out today can be checked in again today (for example after a check-out entered by mistake).
+- `EXCLUDE USING gist (person_id WITH =, app.stay_range(entry_date, exit_date) WITH &&)` prevents overlapping stays. `app.stay_range` is `[entry_date, exit_date)`, so the exit day is excluded and a person checked out today can be checked in again today (for example after a check-out entered by mistake). An open stay has no end date. A stay that starts and ends on the same day occupies that one day, so it cannot hide inside another stay.
 
 ### 5.4 `outings`
 
@@ -328,14 +328,14 @@ All RPCs are `security invoker`, so RLS applies. They raise business errors with
 
 | Function | Who | Behavior | Errors |
 |---|---|---|---|
-| `find_possible_duplicates(first_name, last_name, birth_date, country_code)` | any role | Returns up to 5 non-merged candidates with score, photo path, age, country and last stay. See §6.1 | none |
+| `find_possible_duplicates(first_name, last_name, birth_date, country_code)` | any role | Returns up to 5 non-merged candidates with score, photo path, birth date (and whether it is estimated), country and last stay. The web app computes the age from the birth date and the shelter's today. See §6.1 | none |
 | `search_people(q, limit = 50)` | any role | Trigram plus prefix search over `search_name`. Non-merged only. Returns the last stay summary | none |
 | `register_person_and_check_in(person jsonb, stay jsonb)` | any role | Inserts the person and an open stay in one transaction. Returns ids | `validation` |
-| `check_in(person_id, stay jsonb)` | any role | Opens a new stay for an existing person | `already_checked_in`, `overlapping_stays` |
-| `check_out(stay_id, exit_date = app.today())` | any role | Closes the stay. An open outing is left open ("did not return"). `exit_date` must be on or after the date of the stay's last outing | `stay_not_open`, `validation` |
-| `start_outing(stay_id, comment, confirm_exception = false)` | any role | If the stay already has an outing today and `confirm_exception` is false, raises `outing_exception_needs_confirmation`. Otherwise inserts the outing with the right `is_exception` | `stay_not_open`, `outing_already_open`, `outing_exception_needs_confirmation` |
-| `end_outing(stay_id)` | any role | Sets `returned_at = now()` on the open outing | `no_open_outing` |
-| `merge_people(survivor_id, duplicate_id)` | admin (checked explicitly in the function) | Moves the duplicate's stays to the survivor, repoints `carer_id` references, and sets `duplicate.merged_into_id`. The survivor's fields are kept. Writes an audit row with `action = 'merge'` | `not_authorized`, `merge_same_person`, `overlapping_stays` |
+| `check_in(person_id, stay jsonb)` | any role | Opens a new stay for an existing person | `not_found`, `already_checked_in`, `overlapping_stays` |
+| `check_out(stay_id, exit_date = app.today())` | any role | Closes the stay. An open outing is left open ("did not return"). `exit_date` must be on or after the date of the stay's last outing | `not_found`, `stay_not_open`, `validation` |
+| `start_outing(stay_id, comment, confirm_exception = false)` | any role | If the stay already has an outing today and `confirm_exception` is false, raises `outing_exception_needs_confirmation`. Otherwise inserts the outing with the right `is_exception` | `not_found`, `stay_not_open`, `outing_already_open`, `outing_exception_needs_confirmation` |
+| `end_outing(stay_id)` | any role | Sets `returned_at = now()` on the open outing | `not_found`, `stay_not_open`, `no_open_outing` |
+| `merge_people(survivor_id, duplicate_id)` | admin (checked explicitly in the function) | Moves the duplicate's stays to the survivor, repoints `carer_id` references, and sets `duplicate.merged_into_id`. The survivor's fields are kept. Writes an audit row with `action = 'merge'` | `not_authorized`, `merge_same_person`, `not_found`, `overlapping_stays` |
 
 Simple edits (person fields, stay fields, outing corrections) and admin deletes of stays and outings use PostgREST directly, through `api/` with optimistic concurrency.
 
@@ -370,7 +370,7 @@ A candidate is returned if `name_sim ≥ 0.30`, or if `name_sim ≥ 0.20` and th
 | Read `audit_log` | | | | ✓ |
 | Delete people | nobody | | | |
 
-Case type and stay notes are visible to volunteers in v1. **Rule for sub-project 4:** sensitive data always lives in separate tables with their own RLS. It is never handled by hiding columns, because all users share the `authenticated` database role.
+Merging is admin-only at the data level too: only an admin may set `people.merged_into_id` or move a stay to another person (`stays.person_id`); a trigger rejects those writes from other roles. Case type and stay notes are visible to volunteers in v1. **Rule for sub-project 4:** sensitive data always lives in separate tables with their own RLS. It is never handled by hiding columns, because all users share the `authenticated` database role.
 
 ### 7.2 RLS mechanics
 
@@ -378,12 +378,12 @@ Case type and stay notes are visible to volunteers in v1. **Rule for sub-project
 - Policies call it as `(select app.current_app_role())`, so it is evaluated once per statement.
 - "Any role" policies check that `(select app.current_app_role()) is not null`. Admin-only policies check that it equals `'admin'`.
 - `anon` has no grants on any table. With RLS enabled and no matching policy, access is denied.
-- `security definer` is used only by `app.current_app_role()`, the audit functions (`app.audit()` and `app.write_audit()`), the user-linking triggers, and the auth hooks. `created_by`/`updated_by` stamping is a plain trigger that sets the values from `auth.uid()`.
+- `security definer` is used only by `app.current_app_role()`, `app.shelter_timezone()`, the audit functions (`app.audit()` and `app.write_audit()`), the user-linking triggers, and the auth hooks. `created_by`/`updated_by` stamping is a plain trigger that sets the values from `auth.uid()`.
   - The auth hooks grant execute to `supabase_auth_admin` only.
 
 ### 7.3 Storage
 
-- The `person-photos` bucket is private. Its policies allow any active role to read and write, and admin to delete.
+- The `person-photos` bucket is private. Its policies allow any active role to read and write, and admin to delete. Writes are only accepted for object names made of a UUID, optionally followed by `_thumb`, and `.jpg`.
 - **Objects:** `{person_id}.jpg` (about 800px) and `{person_id}_thumb.jpg` (about 160px). Both are produced in the browser and uploaded with `upsert`.
 - Images are served only through signed URLs that last 10 minutes. Thumbnails are requested in batches with `createSignedUrls`.
 - Paths contain only UUIDs, never names.
