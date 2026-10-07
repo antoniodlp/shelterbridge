@@ -6,7 +6,7 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
-    "db:lint": "supabase db lint --level error"
+    "db:lint": "supabase db lint --level error --fail-on error"
   },
   "devDependencies": {
     "supabase": "^2.120.0"
