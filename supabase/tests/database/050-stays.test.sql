@@ -1,12 +1,13 @@
 begin;
-select plan(14);
+select plan(18);
 
 select tests.create_user('t-admin@example.test', 'admin');
 select tests.create_user('t-volunteer@example.test', 'volunteer');
 
 insert into public.people (id, first_name) values
   ('00000000-0000-4000-8000-000000000201', 'Persona Uno'),
-  ('00000000-0000-4000-8000-000000000202', 'Persona Dos');
+  ('00000000-0000-4000-8000-000000000202', 'Persona Dos'),
+  ('00000000-0000-4000-8000-000000000203', 'Persona Tres');
 
 select tests.authenticate_as('t-volunteer@example.test');
 select lives_ok(
@@ -55,15 +56,37 @@ select throws_ok(
     values ('00000000-0000-4000-8000-000000000202', app.today() - 25, app.today() - 22)$$,
   '23P01', null,
   'overlapping stays are rejected');
+select throws_ok(
+  $$insert into public.stays (person_id, entry_date, exit_date)
+    values ('00000000-0000-4000-8000-000000000202', app.today() - 25, app.today() - 25)$$,
+  '23P01', null,
+  'a same-day stay inside another stay is rejected');
 select lives_ok(
   $$insert into public.stays (person_id, entry_date, exit_date)
     values ('00000000-0000-4000-8000-000000000202', app.today() - 20, app.today() - 18)$$,
   'a stay may start on the day the previous one ended');
+select lives_ok(
+  $$insert into public.stays (person_id, entry_date, exit_date)
+    values ('00000000-0000-4000-8000-000000000202', app.today() - 35, app.today() - 35)$$,
+  'a same-day stay may be on the day the previous one ended');
+select throws_ok(
+  $$insert into public.stays (person_id, entry_date, exit_date)
+    values ('00000000-0000-4000-8000-000000000202', app.today() - 35, app.today() - 35)$$,
+  '23P01', null,
+  'two identical same-day stays are rejected');
 select throws_ok(
   $$insert into public.stays (person_id, phone_status)
     values ('00000000-0000-4000-8000-000000000202', 'lost')$$,
   '23514', null,
   'an unknown phone status is rejected');
+
+insert into public.stays (id, person_id, entry_date)
+values ('00000000-0000-4000-8000-000000000214', '00000000-0000-4000-8000-000000000203', app.today() - 3);
+update public.stays set exit_date = app.today() where id = '00000000-0000-4000-8000-000000000214';
+select lives_ok(
+  $$insert into public.stays (person_id, entry_date)
+    values ('00000000-0000-4000-8000-000000000203', app.today())$$,
+  'a person checked out today can be checked in again today');
 
 delete from public.stays where id = '00000000-0000-4000-8000-000000000212';
 select is(

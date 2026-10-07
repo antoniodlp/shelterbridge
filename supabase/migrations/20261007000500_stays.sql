@@ -1,5 +1,20 @@
--- Stays: one arrival until check-out. The range [entry_date, exit_date) excludes
--- the exit day so a person checked out today can be checked in again today.
+-- Stays: one arrival until check-out.
+
+-- The days a stay occupies. The exit day is excluded so a person checked out today
+-- can be checked in again today, but a stay that starts and ends on the same day
+-- still occupies that day.
+create function app.stay_range(p_entry date, p_exit date)
+returns daterange
+language sql
+immutable
+parallel safe
+set search_path = ''
+as $$
+  select case
+    when p_exit = p_entry then daterange(p_entry, p_entry, '[]')
+    else daterange(p_entry, p_exit, '[)')
+  end
+$$;
 
 create table public.stays (
   id             uuid primary key default gen_random_uuid(),
@@ -18,7 +33,7 @@ create table public.stays (
   constraint stays_exit_after_entry check (exit_date is null or exit_date >= entry_date),
   constraint stays_no_overlap exclude using gist (
     person_id with =,
-    daterange(entry_date, exit_date, '[)') with &&
+    app.stay_range(entry_date, exit_date) with &&
   )
 );
 
