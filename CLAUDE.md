@@ -60,7 +60,7 @@ There are none yet. Add them here once the project is scaffolded.
 - Authorization lives in Postgres:
   - every table has RLS enabled;
   - frontend route guards are for UX only.
-- The role comes from the `app_users` table through `app.current_role()`, not from JWT claims. This keeps deactivation immediate.
+- The role comes from the `app_users` table through `app.current_app_role()`, not from JWT claims. This keeps deactivation immediate.
 - Operations with several steps are Postgres RPC functions:
   - they are `security invoker`, so RLS still applies;
   - they raise `P0001` with a stable error code as the message.

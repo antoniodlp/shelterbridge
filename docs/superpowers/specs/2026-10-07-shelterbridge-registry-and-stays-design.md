@@ -104,10 +104,10 @@ Supabase
 ### 4.3 Backend (`supabase/`)
 
 - **Postgres** holds tables, constraints, views, RLS policies, RPC functions and audit triggers. **All authorization lives in the database.**
-- Extensions: `pg_trgm`, `unaccent`, `citext`, `btree_gist`.
+- Extensions: `pg_trgm`, `unaccent`, `btree_gist`.
 - **Schemas:**
   - `public` holds tables, views and RPCs exposed through PostgREST.
-  - `app` holds internal helpers (`current_role()`, `today()`, `immutable_unaccent()`, audit trigger function). It is not exposed through the API.
+  - `app` holds internal helpers (`current_app_role()`, `today()`, `immutable_unaccent()`, audit trigger function). It is not exposed through the API.
 - **Storage:** a private bucket, `person-photos`.
 - **No Edge Functions in v1.**
 
@@ -118,7 +118,7 @@ Supabase
   - Admins maintain `app_users` (email + role) from the app.
   - A **Before User Created** auth hook rejects any sign-up, Google or password, whose email is not in `app_users` with `active = true`.
 - **Linking:** an `after insert` trigger on `auth.users` sets `app_users.user_id` for the matching email.
-- **Role resolution:** RLS reads the role from `app_users` on each statement through `app.current_role()`; it is not stored in the JWT.
+- **Role resolution:** RLS reads the role from `app_users` on each statement through `app.current_app_role()`; it is not stored in the JWT.
   - This makes deactivation immediate.
   - The UI loads the signed-in user's own `app_users` row after sign-in to know its role.
 - **No role, no data:** a user without an active `app_users` row sees nothing (RLS) and the UI shows an "access pending" screen.
@@ -166,7 +166,7 @@ class ApiError extends Error {
 | `P0001` raised by our functions | `message` is the code |
 | `42501` | `not_authorized` |
 | `23P01` (exclusion) | `overlapping_stays` |
-| `23514` / `23502` | `validation` |
+| `23505`, `23514`, `23502`, `23503`, `22007`, `22008`, `22P02` (unique, check, not null, foreign key, bad date or uuid text) | `validation` |
 | fetch failure | `network` |
 | anything else | `unknown` |
 
@@ -252,7 +252,7 @@ Age is **never stored**. It is calculated as `date_part('year', age(app.today(),
 
 **Constraints:**
 - `UNIQUE (person_id) WHERE exit_date IS NULL` allows at most one open stay per person.
-- `EXCLUDE USING gist (person_id WITH =, daterange(entry_date, exit_date, '[]') WITH &&)` prevents overlapping stays. An open stay is treated as having no end date.
+- `EXCLUDE USING gist (person_id WITH =, daterange(entry_date, exit_date, '[)') WITH &&)` prevents overlapping stays. An open stay is treated as having no end date. The range excludes the exit date, so a person checked out today can be checked in again today (for example after a check-out entered by mistake).
 
 ### 5.4 `outings`
 
@@ -283,7 +283,7 @@ An outing that is still open when the stay is checked out stays open permanently
 
 | Column | Type | Notes |
 |---|---|---|
-| `email` | citext PK | |
+| `email` | text PK | trimmed and lowercased by a trigger, so comparisons are case-insensitive |
 | `user_id` | uuid unique → `auth.users` | filled at first sign-in |
 | `role` | `app_role` enum | `'admin' \| 'legal' \| 'psychology' \| 'volunteer'` |
 | `display_name` | text not null | |
@@ -302,8 +302,8 @@ An outing that is still open when the stay is checked out stays open permanently
 | `table_name` | text not null | |
 | `record_id` | text not null | |
 | `action` | text not null | `'insert' \| 'update' \| 'delete' \| 'merge'` |
-| `old` | jsonb | |
-| `new` | jsonb | |
+| `old_data` | jsonb | row before the change |
+| `new_data` | jsonb | row after the change |
 
 ### 5.8 View `current_residents`
 
@@ -374,11 +374,11 @@ Case type and stay notes are visible to volunteers in v1. **Rule for sub-project
 
 ### 7.2 RLS mechanics
 
-- `app.current_role()` is `stable` and `security definer`. It returns the `role` of the `app_users` row where `user_id = auth.uid()` and `active`, or null.
-- Policies call it as `(select app.current_role())`, so it is evaluated once per statement.
-- "Any role" policies check that `(select app.current_role()) is not null`. Admin-only policies check that it equals `'admin'`.
+- `app.current_app_role()` is `stable` and `security definer`. It returns the `role` of the `app_users` row where `user_id = auth.uid()` and `active`, or null.
+- Policies call it as `(select app.current_app_role())`, so it is evaluated once per statement.
+- "Any role" policies check that `(select app.current_app_role()) is not null`. Admin-only policies check that it equals `'admin'`.
 - `anon` has no grants on any table. With RLS enabled and no matching policy, access is denied.
-- `security definer` is used only by `app.current_role()`, the audit trigger function, and the auth hooks. `created_by`/`updated_by` stamping is a plain trigger that sets the values from `auth.uid()`.
+- `security definer` is used only by `app.current_app_role()`, the audit functions (`app.audit()` and `app.write_audit()`), the user-linking triggers, and the auth hooks. `created_by`/`updated_by` stamping is a plain trigger that sets the values from `auth.uid()`.
   - The auth hooks grant execute to `supabase_auth_admin` only.
 
 ### 7.3 Storage
@@ -392,7 +392,7 @@ Case type and stay notes are visible to volunteers in v1. **Rule for sub-project
 
 ## 8. Audit
 
-- **Generic trigger.** `app.audit()` runs `after insert or update or delete` on `people`, `stays`, `outings`, `countries`, `case_types`, `genders`, `settings` and `app_users`. It writes `old` and `new` as jsonb, plus `actor_user_id`, `actor_role` and `operator_name`.
+- **Generic trigger.** `app.audit()` runs `after insert or update or delete` on `people`, `stays`, `outings`, `countries`, `case_types`, `genders`, `settings` and `app_users`. It writes `old_data` and `new_data` as jsonb, plus `actor_user_id`, `actor_role` and `operator_name`.
 - **Operator name:**
   - After the shared volunteer account signs in, the `/shift` screen asks who is on shift (free text, for example "Ana, Luis"). The answer is stored in `sessionStorage` and Pinia.
   - The Supabase client's custom `fetch` sends it as `x-operator-name`, base64-encoded UTF-8.
