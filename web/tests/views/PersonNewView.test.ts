@@ -90,6 +90,22 @@ describe('PersonNewView', () => {
     expect(router.currentRoute.value.name).toBe('person-new')
   })
 
+  it('stays locked and never registers twice when opening the saved record fails', async () => {
+    vi.mocked(registerAndCheckIn).mockResolvedValue({ person_id: uuid(1), stay_id: uuid(101) })
+    const { wrapper, router } = await mountView()
+    const failure = new Error('chunk failed to load')
+    vi.spyOn(router, 'push').mockRejectedValue(failure)
+    await wrapper.find('#person-first-name').setValue('Rosa Elena')
+    const form = wrapper.find('form.registration-form')
+    await form.trigger('submit')
+    await vi.waitFor(() => expect(notify.error).toHaveBeenCalledWith(failure))
+    await flushPromises()
+    expect(wrapper.find('button[type="submit"]').attributes('disabled')).toBeDefined()
+    await form.trigger('submit')
+    await flushPromises()
+    expect(registerAndCheckIn).toHaveBeenCalledTimes(1)
+  })
+
   it('sends one request when the form is submitted twice', async () => {
     vi.mocked(registerAndCheckIn).mockReturnValue(new Promise(() => {}))
     const { wrapper } = await mountView()

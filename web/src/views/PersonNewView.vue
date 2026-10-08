@@ -31,17 +31,27 @@ async function save(): Promise<void> {
   stayErrors.value = validateStay(stay.value, todayDate)
   if (showErrorSummary.value) return
   saving.value = true
+  let personId: string
   try {
-    const { person_id } = await registerAndCheckIn(
+    const registered = await registerAndCheckIn(
       formToPersonInput(person.value, todayDate),
       formToStayInput(stay.value),
     )
-    notify.success('registration.saved')
-    await router.push({ name: 'person', params: { id: person_id } })
+    personId = registered.person_id
+  } catch (error) {
+    // Nothing was saved, so the form opens again with everything that was typed.
+    notify.error(error)
+    saving.value = false
+    return
+  }
+  // The person and the stay are saved. The form stays locked from here on, so a failed
+  // navigation (for example a lazy route chunk that does not load) cannot lead to a
+  // second registration of the same person.
+  notify.success('registration.saved')
+  try {
+    await router.push({ name: 'person', params: { id: personId } })
   } catch (error) {
     notify.error(error)
-  } finally {
-    saving.value = false
   }
 }
 </script>
