@@ -58,6 +58,8 @@ export function toApiError(error: unknown): ApiError {
     if (error.code === 'invalid_credentials') return new ApiError('invalid_credentials')
     if (error.code === 'email_not_confirmed') return new ApiError('email_not_confirmed')
     if (error.code === 'weak_password' || error.code === 'validation_failed') return new ApiError('validation')
+    // A new password equal to the current one.
+    if (error.code === 'same_password') return new ApiError('validation')
     if (isAuthApiError(error) && error.status === 403) return new ApiError('not_authorized')
     return new ApiError('unknown')
   }

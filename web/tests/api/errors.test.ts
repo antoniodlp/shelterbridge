@@ -86,6 +86,11 @@ describe('toApiError', () => {
     expect(toApiError(new AuthWeakPasswordError('weak', 422, ['length'])).code).toBe('validation')
   })
 
+  it('maps a new password equal to the current one to validation', () => {
+    const error = new AuthApiError('New password should be different from the old password.', 422, 'same_password')
+    expect(toApiError(error).code).toBe('validation')
+  })
+
   it('maps an Auth network failure to network', () => {
     expect(toApiError(new AuthRetryableFetchError('Failed to fetch', 0)).code).toBe('network')
   })
