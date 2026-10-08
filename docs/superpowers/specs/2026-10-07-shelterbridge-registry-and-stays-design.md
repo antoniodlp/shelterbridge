@@ -445,6 +445,8 @@ Route guards use the role from the Pinia session store. RLS is the real enforcem
 
 From search or from the duplicate panel, open `/people/:id` and choose **"Nueva estancia"** (new stay). That shows the stay fields and calls `checkIn`.
 
+If the newest stay was checked out today by mistake, any role can reopen it from the stay history (this clears `exit_date`). This is also the way out when a stay started and ended today, because such a stay occupies that day and blocks a new stay on it.
+
 ### 9.4 Daily operations (`/residents`)
 
 - **Headcount bar:** total residents, inside, outside, minors, and unaccompanied minors.
@@ -470,7 +472,7 @@ From search or from the duplicate panel, open `/people/:id` and choose **"Nueva 
 ## 10. Error handling
 
 - **The database is authoritative.** Client-side validation mirrors it for fast feedback: required fields, dates not in the future, a plausible birth date, and exit date on or after entry date.
-- **Forms never lose input on failure.** Each failure shows a translated toast built from `ApiError.i18nKey`, with a retry option.
+- **Forms never lose input on failure.** Each failure shows a translated toast built from `ApiError.i18nKey`; the person retries with the same button.
 - **Connectivity:** when `navigator.onLine` is false or a request fails with `network`, the UI shows a "Sin conexión" (no connection) banner. There is no offline queue in v1.
 - **Concurrent edits:** `stale_record` produces a message that someone else changed the record, with an option to reload it.
 - **Privacy:** personal data never appears in URLs (UUIDs only), console logs, or error messages. There is no third-party error monitoring in v1.
