@@ -57,10 +57,13 @@ describe('LoginView', () => {
     mockSuccessfulSignIn()
     const { wrapper, router } = await mountLogin(`/login?redirect=${encodeURIComponent(target)}`)
     expect(router.currentRoute.value.query.redirect).toBe(target)
+    // The route table's catch-all also lands on residents, so check the target the view chose.
+    const replace = vi.spyOn(router, 'replace')
     await wrapper.get('#login-email').setValue('admin@shelterbridge.test')
     await wrapper.get('#login-password').setValue('shelterbridge-dev')
     await wrapper.get('form').trigger('submit')
     await vi.waitFor(() => expect(router.currentRoute.value.name).toBe('residents'))
+    expect(replace).toHaveBeenCalledWith('/residents')
   })
 
   it.each([
