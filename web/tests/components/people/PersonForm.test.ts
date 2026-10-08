@@ -45,6 +45,8 @@ describe('PersonForm', () => {
     expect(model.birth_date).toBe(`${year}-${today.slice(5, 7)}-01`)
     await vi.waitFor(() => expect(wrapper.find('[data-testid="carer-section"]').exists()).toBe(true))
     expect(listCurrentResidents).toHaveBeenCalled()
+    const section = wrapper.find('[data-testid="carer-section"]')
+    expect(section.find('label').text()).toBe('Persona responsable')
   })
 
   it('marks an estimated age with a tilde', async () => {

@@ -265,9 +265,9 @@
       "country": "País de origen",
       "countryPlaceholder": "Selecciona un país",
       "region": "Departamento o estado",
-      "carer": "Persona que lo cuida",
+      "carer": "Persona responsable",
       "carerHelp": "Busca entre las personas que están en el albergue.",
-      "carerPlaceholder": "Elige a la persona que lo cuida",
+      "carerPlaceholder": "Elige a la persona responsable",
       "carerFilter": "Escribe un nombre",
       "carerLoading": "Cargando personas..."
     },
@@ -287,7 +287,7 @@
       "gender": "Género",
       "country": "País de origen",
       "region": "Departamento o estado",
-      "carer": "Persona que lo cuida",
+      "carer": "Persona responsable",
       "carerRecord": "Ver ficha",
       "unknown": "Sin dato"
     },
