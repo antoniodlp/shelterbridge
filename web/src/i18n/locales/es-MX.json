@@ -451,6 +451,30 @@
       "previous": "Anterior",
       "next": "Siguiente",
       "unknownUser": "Usuario desconocido"
+    },
+    "merge": {
+      "intro": "Elige dos registros de la misma persona. Se conservan los datos del registro que elijas y las estancias de ambos.",
+      "first": "Primer registro",
+      "second": "Segundo registro",
+      "search": "Buscar por nombre",
+      "searchSubmit": "Buscar",
+      "noResults": "Sin resultados.",
+      "change": "Cambiar",
+      "keep": "Conservar este registro",
+      "stays": "Estancias",
+      "noStays": "Sin estancias",
+      "range": "{from} a {to}",
+      "openRange": "desde {from}, abierta",
+      "submit": "Unir registros",
+      "confirmTitle": "Unir registros",
+      "confirmMessage": "Se conservará el registro de {survivor} y el de {duplicate} quedará unido a él. Esta acción no se puede deshacer desde la aplicación.",
+      "confirm": "Unir",
+      "done": "Registros unidos.",
+      "samePerson": "Elegiste el mismo registro dos veces.",
+      "overlapTitle": "Las estancias se enciman",
+      "overlapIntro": "Corrige o elimina una de estas estancias antes de unir los registros:",
+      "overlapRow": "{first} y {second}",
+      "openRecord": "Abrir ficha"
     }
   }
 }

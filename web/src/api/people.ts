@@ -95,3 +95,9 @@ export async function searchPeople(query: string, limit = 50): Promise<PersonSea
   if (error) throw toApiError(error)
   return (data ?? []) as PersonSearchResult[]
 }
+
+/** Admin only. Moves the duplicate's stays to the survivor; the survivor's details are kept. */
+export async function mergePeople(survivorId: string, duplicateId: string): Promise<void> {
+  const { error } = await supabase.rpc('merge_people', { p_survivor_id: survivorId, p_duplicate_id: duplicateId })
+  if (error) throw toApiError(error)
+}
