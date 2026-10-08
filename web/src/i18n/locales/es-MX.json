@@ -401,6 +401,56 @@
         "codeInvalid": "El código no tiene el formato correcto.",
         "orderInvalid": "El orden debe ser un número entero."
       }
+    },
+    "settings": {
+      "timezone": "Zona horaria del albergue",
+      "timezoneHelp": "Define qué día es hoy para los ingresos, los egresos y la regla de una salida por día.",
+      "saved": "Configuración guardada."
+    },
+    "audit": {
+      "filters": {
+        "table": "Tabla",
+        "allTables": "Todas",
+        "record": "Identificador del registro",
+        "user": "Usuario",
+        "allUsers": "Todos",
+        "from": "Desde",
+        "to": "Hasta",
+        "apply": "Filtrar"
+      },
+      "tables": {
+        "people": "Personas",
+        "stays": "Estancias",
+        "outings": "Salidas",
+        "countries": "Países",
+        "case_types": "Tipos de caso",
+        "genders": "Géneros",
+        "settings": "Configuración",
+        "app_users": "Usuarios"
+      },
+      "actions": {
+        "insert": "Alta",
+        "update": "Cambio",
+        "delete": "Baja",
+        "merge": "Unión"
+      },
+      "columns": {
+        "at": "Fecha y hora",
+        "user": "Usuario",
+        "operator": "En turno",
+        "table": "Registro",
+        "action": "Acción",
+        "changes": "Campos"
+      },
+      "showChanges": "Ver detalle",
+      "before": "Antes",
+      "after": "Después",
+      "empty": "No hay cambios con estos filtros.",
+      "pager": "Páginas del registro de cambios",
+      "page": "Página {page} de {pages}",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "unknownUser": "Usuario desconocido"
     }
   }
 }
