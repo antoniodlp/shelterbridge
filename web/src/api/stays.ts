@@ -1,4 +1,5 @@
-import type { CurrentResident, PhoneStatus } from '@/types/domain'
+import type { Json } from '@/types/database'
+import type { CurrentResident, PhoneStatus, Stay } from '@/types/domain'
 import { cleanText } from '@/lib/text'
 import { supabase } from './client'
 import { toApiError } from './errors'
@@ -31,4 +32,25 @@ export function cleanStay(input: StayPatch): StayPatch {
   if ('bed' in input) cleaned.bed = cleanText(input.bed)
   if ('notes' in input) cleaned.notes = cleanText(input.notes)
   return cleaned
+}
+
+/** Every stay of a person, newest entry first. */
+export async function listStaysForPerson(personId: string): Promise<Stay[]> {
+  const { data, error } = await supabase
+    .from('stays')
+    .select('*')
+    .eq('person_id', personId)
+    .order('entry_date', { ascending: false })
+  if (error) throw toApiError(error)
+  return data ?? []
+}
+
+/** Opens a new stay for someone already registered. Returns the stay id. */
+export async function checkIn(personId: string, stay: NewStayInput): Promise<string> {
+  const { data, error } = await supabase.rpc('check_in', {
+    p_person_id: personId,
+    p_stay: cleanStay(stay) as unknown as Json,
+  })
+  if (error) throw toApiError(error)
+  return data as string
 }

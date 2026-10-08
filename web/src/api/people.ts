@@ -1,7 +1,9 @@
 import { cleanText } from '@/lib/text'
 import type { Json } from '@/types/database'
+import type { Person } from '@/types/domain'
 import { supabase } from './client'
 import { toApiError } from './errors'
+import { updateVersioned } from './rows'
 import { cleanStay, type NewStayInput } from './stays'
 
 export interface NewPersonInput {
@@ -70,4 +72,19 @@ export async function findPossibleDuplicates(input: {
   })
   if (error) throw toApiError(error)
   return (data ?? []) as DuplicateCandidate[]
+}
+
+export async function getPerson(id: string): Promise<Person> {
+  const { data, error } = await supabase.from('people').select('*').eq('id', id).single()
+  if (error) throw toApiError(error)
+  return data
+}
+
+/** Saves only if nobody changed the record since `expectedUpdatedAt`; otherwise throws stale_record. */
+export async function updatePerson(
+  id: string,
+  expectedUpdatedAt: string,
+  patch: PersonPatch,
+): Promise<Person> {
+  return updateVersioned('people', { column: 'id', value: id }, expectedUpdatedAt, cleanPerson(patch))
 }

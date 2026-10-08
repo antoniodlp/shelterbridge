@@ -147,7 +147,16 @@
       "confirm": "Registrar excepción"
     },
     "started": "Salida registrada: {name}",
-    "ended": "Regreso registrado: {name}"
+    "ended": "Regreso registrado: {name}",
+    "list": {
+      "title": "Salidas de la estancia actual",
+      "left": "Salió",
+      "returned": "Regresó",
+      "comment": "Comentario",
+      "exception": "Excepción",
+      "notReturned": "No ha regresado",
+      "empty": "Sin salidas en esta estancia."
+    }
   },
   "stays": {
     "checkOut": {
@@ -167,6 +176,24 @@
       "caseTypePlaceholder": "Selecciona un tipo de caso",
       "phoneStatus": "Teléfono",
       "notes": "Notas"
+    },
+    "history": {
+      "title": "Estancias",
+      "entry": "Ingreso",
+      "exit": "Egreso",
+      "open": "Abierta",
+      "bed": "Cama",
+      "caseType": "Tipo de caso",
+      "phone": "Teléfono",
+      "notes": "Notas",
+      "empty": "Sin estancias registradas."
+    },
+    "newStay": {
+      "action": "Nueva estancia",
+      "title": "Nueva estancia",
+      "save": "Abrir estancia",
+      "saved": "Estancia abierta.",
+      "overlapHint": "Las fechas se cruzan con otra estancia de esta persona. Si ingresó y egresó hoy por error, reabre esa estancia desde el historial. Si no, revisa la fecha de ingreso."
     }
   },
   "registration": {
@@ -206,6 +233,30 @@
       "carerPlaceholder": "Elige a la persona que lo cuida",
       "carerFilter": "Escribe un nombre",
       "carerLoading": "Cargando personas..."
+    },
+    "notFound": "No encontramos este registro.",
+    "merged": "Este registro se unió con otro de la misma persona.",
+    "mergedLink": "Ver el registro que se conservó",
+    "detailsTitle": "Datos",
+    "edit": "Editar datos",
+    "save": "Guardar cambios",
+    "saved": "Datos guardados.",
+    "staleTitle": "Alguien más cambió este registro",
+    "staleMessage": "Otra persona guardó cambios mientras editabas. ¿Quieres recargar el registro? Se perderán los cambios que no guardaste.",
+    "keepEditing": "Seguir editando",
+    "details": {
+      "birthDate": "Fecha de nacimiento",
+      "age": "Edad",
+      "gender": "Género",
+      "country": "País de origen",
+      "region": "Departamento o estado",
+      "carer": "Persona que lo cuida",
+      "carerRecord": "Ver ficha",
+      "unknown": "Sin dato"
+    },
+    "status": {
+      "staying": "En el albergue desde {date}",
+      "notStaying": "No está en el albergue"
     }
   },
   "photos": {
