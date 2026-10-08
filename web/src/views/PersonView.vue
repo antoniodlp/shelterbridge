@@ -338,11 +338,12 @@ async function reopenStay(stay: Stay): Promise<void> {
       </div>
       <div class="row g-4">
         <div class="col-lg-4">
+          <!-- Read-only while the details form is open: a photo write bumps updated_at, so that form's save would fail with stale_record. -->
           <PersonPhoto
             :person-id="person.id"
             :photo-path="person.photo_path"
             :name="name"
-            :readonly="merged"
+            :readonly="merged || !!personForm"
             @updated="load"
           />
           <section class="card mb-4">

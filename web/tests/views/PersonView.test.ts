@@ -5,6 +5,7 @@ import { listOutingsForStay } from '@/api/outings'
 import { getPerson, updatePerson } from '@/api/people'
 import { getSignedPhotoUrls } from '@/api/photos'
 import { checkIn, listStaysForPerson } from '@/api/stays'
+import { usePendingPhotos } from '@/composables/usePendingPhotos'
 import { todayIn } from '@/lib/shelterTime'
 import PersonView from '@/views/PersonView.vue'
 import { makeOuting, makePerson, makeStay, STAMP, uuid } from '../fixtures/data'
@@ -70,6 +71,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  usePendingPhotos().clear(uuid(1))
   document.body.innerHTML = ''
 })
 
@@ -122,6 +124,39 @@ describe('PersonView', () => {
     await vi.waitFor(() => expect(wrapper.find('img').attributes('src')).toBe('https://storage.test/rosa.jpg'))
     expect(getSignedPhotoUrls).toHaveBeenCalledWith([path])
     expect(button(wrapper, 'Cambiar foto').exists()).toBe(true)
+  })
+
+  // Every photo write bumps people.updated_at, so a photo changed while the details form is open
+  // would make that form's save fail with stale_record.
+  it('does not offer a photo change while the details form is open, and offers it again after cancelling', async () => {
+    const { wrapper } = await mountLoaded()
+    expect(button(wrapper, 'Agregar foto').exists()).toBe(true)
+    await button(wrapper, 'Editar datos').trigger('click')
+    expect(wrapper.findAll('button').map((candidate) => candidate.text())).not.toContain('Agregar foto')
+    await button(wrapper, 'Cancelar').trigger('click')
+    expect(button(wrapper, 'Agregar foto').exists()).toBe(true)
+  })
+
+  it('offers the photo change again once the details are saved', async () => {
+    vi.mocked(updatePerson).mockResolvedValue(makePerson({ last_name: 'Pérez de Ríos' }))
+    const { wrapper } = await mountLoaded()
+    await button(wrapper, 'Editar datos').trigger('click')
+    expect(wrapper.findAll('button').map((candidate) => candidate.text())).not.toContain('Agregar foto')
+    await wrapper.find('form.person-edit-form').trigger('submit')
+    await vi.waitFor(() => expect(wrapper.find('form.person-edit-form').exists()).toBe(false))
+    expect(button(wrapper, 'Agregar foto').exists()).toBe(true)
+  })
+
+  it('does not offer the photo retry while the details form is open', async () => {
+    usePendingPhotos().set(uuid(1), {
+      full: new Blob(['full'], { type: 'image/jpeg' }),
+      thumb: new Blob(['thumb'], { type: 'image/jpeg' }),
+    })
+    const { wrapper } = await mountLoaded()
+    expect(button(wrapper, 'Reintentar foto').exists()).toBe(true)
+    await button(wrapper, 'Editar datos').trigger('click')
+    expect(wrapper.findAll('button').map((candidate) => candidate.text())).not.toContain('Reintentar foto')
+    expect(wrapper.find('[data-testid="photo-pending"]').exists()).toBe(true)
   })
 
   it('says when the record does not exist', async () => {

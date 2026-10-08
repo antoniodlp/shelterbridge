@@ -43,8 +43,9 @@ export async function uploadPersonPhoto(personId: string, full: Blob, thumb: Blo
     const { error } = await bucket.upload(objectPath, content, { upsert: true, contentType: 'image/jpeg' })
     if (error) throw toApiError(error)
   }
-  // No updated_at version check, unlike other edits: photo_path is always the same
-  // `${id}.jpg`, so a concurrent edit has nothing to lose, and callers have no version to pass.
+  // No updated_at version check, unlike other edits: photo_path is always the same `${id}.jpg`,
+  // and callers have no version to pass. The update still bumps updated_at, which is why the
+  // person record locks the photo while its details form is open.
   const { data, error } = await supabase.from('people').update({ photo_path: path }).eq('id', personId).select('id')
   if (error) throw toApiError(error)
   if (!data || data.length === 0) throw new ApiError('not_found')
