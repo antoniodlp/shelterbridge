@@ -54,6 +54,8 @@ function wallClockIn(instant: Date, timeZone: string): WallClock {
   }
 }
 
+const DAY_MS = 86_400_000
+
 /** How far the timezone's wall clock is ahead of UTC at a given instant. */
 function offsetMs(instantMs: number, timeZone: string): number {
   const wall = wallClockIn(new Date(instantMs), timeZone)
@@ -74,10 +76,20 @@ function zonedToInstant(
   // A second pass fixes the guess when the offset changes in between (daylight saving time).
   const corrected = asUtc - offsetMs(instant, timeZone)
   if (corrected !== instant) instant = corrected
+  // A time the clocks skip (spring forward) shows a different wall clock when read back. Read it
+  // with the offset in force a day earlier, before the jump, which moves it forward past the gap
+  // (east or west of UTC alike). Times that exist keep the result above, so the choice for a
+  // repeated time (fall back) does not change.
+  if (offsetMs(instant, timeZone) !== asUtc - instant) {
+    instant = asUtc - offsetMs(asUtc - DAY_MS, timeZone)
+  }
   return new Date(instant).toISOString()
 }
 
-/** The instant local midnight starts the given day in the timezone. */
+/**
+ * The instant local midnight starts the given day in the timezone. Where the clocks jump
+ * forward at midnight (Santiago, Havana), the day starts at the first valid moment, 01:00.
+ */
 export function startOfDayInstant(value: string, timeZone: string): string {
   const match = DATE_ONLY.exec(value)
   if (!match) throw new Error('startOfDayInstant expects YYYY-MM-DD')
@@ -96,7 +108,11 @@ export function toWallClock(value: string | null | undefined, timeZone: string):
   return new Date(wall.year, wall.month - 1, wall.day, wall.hour, wall.minute)
 }
 
-/** The reverse of toWallClock: a picker value read as shelter wall-clock time. */
+/**
+ * The reverse of toWallClock: a picker value read as shelter wall-clock time. A time the clocks
+ * skip (spring forward) resolves forward, past the gap (02:30 in a 02:00 to 03:00 gap is 03:30);
+ * a time they repeat (fall back) is read as one of its two occurrences.
+ */
 export function fromWallClock(value: Date | null | undefined, timeZone: string): string | null {
   if (!value || Number.isNaN(value.getTime())) return null
   return zonedToInstant(
