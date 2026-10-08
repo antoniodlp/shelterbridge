@@ -1,3 +1,4 @@
+import { flushPromises } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as auth from '@/api/auth'
@@ -25,6 +26,14 @@ function fakeAppUser(patch: Partial<AppUser> = {}): AppUser {
     updated_by: null,
     ...patch,
   }
+}
+
+function deferred<T>(): { promise: Promise<T>; resolve: (value: T) => void } {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((done) => {
+    resolve = done
+  })
+  return { promise, resolve }
 }
 
 let authListener: ((session: auth.Session | null) => void) | null = null
@@ -178,5 +187,116 @@ describe('session store', () => {
     expect(store.status).toBe('signedOut')
     expect(store.operatorName).toBeNull()
     expect(sessionStorage.getItem('sb.operatorName')).toBeNull()
+  })
+})
+
+describe('session store with overlapping loads', () => {
+  it('stays ready when an auth event for the same user arrives while refreshAppUser is loading', async () => {
+    // LoginView calls refreshAppUser() right after signing in, and Supabase's own
+    // SIGNED_IN event arrives separately (deferred), possibly while that load runs.
+    vi.mocked(auth.getSession).mockResolvedValue(null)
+    const store = useSessionStore()
+    await store.init()
+    const firstLoad = deferred<AppUser | null>()
+    vi.mocked(auth.getSession).mockResolvedValue(fakeSession('user-1'))
+    vi.mocked(auth.getMyAppUser).mockReturnValueOnce(firstLoad.promise)
+    vi.mocked(auth.getMyAppUser).mockResolvedValue(fakeAppUser())
+
+    const refreshing = store.refreshAppUser()
+    await vi.waitFor(() => expect(auth.getMyAppUser).toHaveBeenCalledTimes(1))
+    authListener?.(fakeSession('user-1'))
+    await flushPromises()
+    firstLoad.resolve(fakeAppUser())
+    await refreshing
+    await flushPromises()
+
+    expect(store.status).toBe('ready')
+    expect(store.role).toBe('volunteer')
+  })
+
+  it('ends with the latest app user when refreshAppUser starts after an event load', async () => {
+    vi.mocked(auth.getSession).mockResolvedValue(null)
+    const store = useSessionStore()
+    await store.init()
+    const eventLoad = deferred<AppUser | null>()
+    vi.mocked(auth.getMyAppUser).mockReturnValueOnce(eventLoad.promise)
+    authListener?.(fakeSession('user-1'))
+    await vi.waitFor(() => expect(auth.getMyAppUser).toHaveBeenCalledTimes(1))
+
+    vi.mocked(auth.getSession).mockResolvedValue(fakeSession('user-1'))
+    vi.mocked(auth.getMyAppUser).mockResolvedValue(fakeAppUser({ role: 'admin' }))
+    await store.refreshAppUser()
+    expect(store.status).toBe('ready')
+    expect(store.role).toBe('admin')
+
+    // The older load finishes last and must not overwrite the newer result.
+    eventLoad.resolve(fakeAppUser({ role: 'volunteer' }))
+    await flushPromises()
+    expect(store.status).toBe('ready')
+    expect(store.role).toBe('admin')
+  })
+
+  it('stays signed out when a sign-out event arrives while a load is in flight', async () => {
+    vi.mocked(auth.getSession).mockResolvedValue(null)
+    const store = useSessionStore()
+    await store.init()
+    const load = deferred<AppUser | null>()
+    vi.mocked(auth.getSession).mockResolvedValue(fakeSession('user-1'))
+    vi.mocked(auth.getMyAppUser).mockReturnValueOnce(load.promise)
+
+    const refreshing = store.refreshAppUser()
+    await vi.waitFor(() => expect(auth.getMyAppUser).toHaveBeenCalledTimes(1))
+    authListener?.(null)
+    await flushPromises()
+    load.resolve(fakeAppUser())
+    await refreshing
+    await flushPromises()
+
+    expect(store.status).toBe('signedOut')
+    expect(store.session).toBeNull()
+    expect(store.appUser).toBeNull()
+    expect(store.role).toBeNull()
+  })
+
+  it('retries the load on a later event for the same user after a failed load', async () => {
+    vi.mocked(auth.getSession).mockResolvedValue(null)
+    const store = useSessionStore()
+    await store.init()
+    vi.mocked(auth.getMyAppUser).mockRejectedValueOnce(new Error('offline'))
+    authListener?.(fakeSession('user-1'))
+    await flushPromises()
+    expect(store.status).toBe('signedOut')
+
+    vi.mocked(auth.getMyAppUser).mockResolvedValue(fakeAppUser())
+    authListener?.(fakeSession('user-1'))
+    await vi.waitFor(() => expect(store.status).toBe('ready'))
+    expect(auth.getMyAppUser).toHaveBeenCalledTimes(2)
+  })
+
+  it('loads the app user again after a sign-out and a new sign-in of the same user', async () => {
+    vi.mocked(auth.getSession).mockResolvedValue(fakeSession('user-1'))
+    vi.mocked(auth.getMyAppUser).mockResolvedValue(fakeAppUser())
+    const store = useSessionStore()
+    await store.init()
+    authListener?.(null)
+    await vi.waitFor(() => expect(store.status).toBe('signedOut'))
+
+    vi.mocked(auth.getMyAppUser).mockResolvedValue(fakeAppUser({ role: 'legal' }))
+    authListener?.(fakeSession('user-1'))
+    await vi.waitFor(() => expect(store.status).toBe('ready'))
+    expect(store.role).toBe('legal')
+    expect(auth.getMyAppUser).toHaveBeenCalledTimes(2)
+  })
+
+  it('keeps the newest tokens on a token refresh without reloading the app user', async () => {
+    vi.mocked(auth.getSession).mockResolvedValue(fakeSession('user-1'))
+    vi.mocked(auth.getMyAppUser).mockResolvedValue(fakeAppUser())
+    const store = useSessionStore()
+    await store.init()
+    const refreshed = { ...fakeSession('user-1'), access_token: 'newer-token' } as auth.Session
+    authListener?.(refreshed)
+    await flushPromises()
+    expect(store.session?.access_token).toBe('newer-token')
+    expect(auth.getMyAppUser).toHaveBeenCalledTimes(1)
   })
 })

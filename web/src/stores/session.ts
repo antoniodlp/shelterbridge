@@ -36,23 +36,32 @@ export const useSessionStore = defineStore('session', () => {
 
   let initPromise: Promise<void> | null = null
   let applyCount = 0
+  // The user whose app user was last loaded successfully. Unlike session.value, it is not
+  // set while a load is still in flight, so a no-op event cannot be mistaken for a loaded user.
+  let loadedUserId: string | null = null
 
   async function apply(next: Session | null, reloadUser: boolean): Promise<void> {
+    // A token refresh for the user we already loaded: keep the newest tokens, nothing else.
+    // This returns before the counter moves, so it never cancels a load in flight.
+    if (next !== null && !reloadUser && status.value !== 'loading' && next.user.id === loadedUserId) {
+      session.value = next
+      return
+    }
     const call = ++applyCount
-    const sameUser = next !== null && next.user.id === session.value?.user.id
     session.value = next
     if (next === null) {
+      loadedUserId = null
       appUser.value = null
       status.value = 'signedOut'
       // Also covers a sign-out started by Supabase, such as an expired refresh token.
       setOperatorName(null)
       return
     }
-    if (sameUser && !reloadUser && status.value !== 'loading') return
     const user = await getMyAppUser()
     if (call !== applyCount) return
     appUser.value = user
     status.value = user?.active ? 'ready' : 'pending'
+    loadedUserId = next.user.id
   }
 
   function init(): Promise<void> {
