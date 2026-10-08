@@ -315,5 +315,22 @@
     "saved": "Foto guardada.",
     "uploadFailed": "La foto no se pudo guardar. La persona sí quedó registrada.",
     "retry": "Reintentar foto"
+  },
+  "search": {
+    "label": "Nombre o apellido",
+    "placeholder": "Escribe al menos 2 letras",
+    "submit": "Buscar",
+    "tooShort": "Escribe al menos 2 letras para buscar.",
+    "noResults": "No encontramos a nadie con ese nombre.",
+    "columns": {
+      "photo": "Foto",
+      "name": "Nombre",
+      "age": "Edad",
+      "country": "País",
+      "lastStay": "Última estancia"
+    },
+    "staying": "En el albergue",
+    "lastStay": "{from} a {to}",
+    "noStays": "Sin estancias"
   }
 }

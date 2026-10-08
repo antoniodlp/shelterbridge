@@ -88,3 +88,10 @@ export async function updatePerson(
 ): Promise<Person> {
   return updateVersioned('people', { column: 'id', value: id }, expectedUpdatedAt, cleanPerson(patch))
 }
+
+/** Searches the whole history, best matches first. Merged records are never returned. */
+export async function searchPeople(query: string, limit = 50): Promise<PersonSearchResult[]> {
+  const { data, error } = await supabase.rpc('search_people', { p_query: query, p_limit: limit })
+  if (error) throw toApiError(error)
+  return (data ?? []) as PersonSearchResult[]
+}
