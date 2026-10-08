@@ -366,6 +366,41 @@
       "deactivateTitle": "Desactivar usuario",
       "deactivateMessage": "{name} ya no podrá ver ni cambiar datos. ¿Continuar?",
       "updated": "Usuario actualizado."
+    },
+    "catalogs": {
+      "add": "Agregar",
+      "edit": "Editar",
+      "names": {
+        "case_types": "Tipos de caso",
+        "genders": "Géneros",
+        "countries": "Países"
+      },
+      "columns": {
+        "code": "Código",
+        "labelEs": "Nombre en español",
+        "labelEn": "Nombre en inglés",
+        "order": "Orden",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "saved": "Catálogo actualizado.",
+      "dialog": {
+        "newTitle": "Agregar a {catalog}",
+        "editTitle": "Editar valor",
+        "code": "Código",
+        "codeHelpCountries": "Dos letras mayúsculas del código ISO, por ejemplo MX. No se puede cambiar después.",
+        "codeHelpSlug": "Minúsculas, números y guion bajo, por ejemplo solicitante_asilo. No se puede cambiar después.",
+        "labelEs": "Nombre en español",
+        "labelEn": "Nombre en inglés (opcional)",
+        "order": "Orden en las listas",
+        "active": "Activo (se muestra al elegir)"
+      },
+      "validation": {
+        "codeInvalid": "El código no tiene el formato correcto.",
+        "orderInvalid": "El orden debe ser un número entero."
+      }
     }
   }
 }
