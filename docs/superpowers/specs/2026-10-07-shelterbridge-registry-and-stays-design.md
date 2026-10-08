@@ -227,7 +227,7 @@ create table <catalog> (
 | `country_code` | text → `countries` | nullable |
 | `region` | text | department/state, free text |
 | `carer_id` | uuid → `people` | for minors; `CHECK (carer_id <> id)` |
-| `photo_path` | text | `person-photos/{id}.jpg` |
+| `photo_path` | text | `{id}.jpg` in the `person-photos` bucket |
 | `search_name` | text, generated stored | `app.immutable_unaccent(lower(first_name \|\| ' ' \|\| coalesce(last_name, '')))`, GIN trigram index |
 | `merged_into_id` | uuid → `people` | set when merged into another record |
 | `source` | text not null default `'app'` | `CHECK IN ('app', 'import')` |

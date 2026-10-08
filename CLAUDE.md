@@ -10,7 +10,7 @@ The main purpose is to manage the people staying at the shelter and their needs.
 
 ## Status
 
-The database (Plan 1) and the web foundation (Plan 2) for sub-project 1 are implemented and tested: sign-in, roles, the shift screen, the app shell in Spanish and the `api/` layer. The feature screens (Plan 3) come next.
+Sub-project 1 (Registry and Stays) is implemented and tested: the database (Plan 1), the web foundation (Plan 2) and the web features (Plan 3). Sub-project 2 (Reports) is next.
 
 - Spec for sub-project 1: [docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md](docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md)
 - Implementation plans go in `docs/superpowers/plans/`.
@@ -61,11 +61,14 @@ npm run web:test:integration                       # web/src/api against local S
 npm run web:e2e                                    # Playwright end-to-end tests (run db:reset first)
 npm run web:lint                                   # ESLint, including the Supabase import boundary
 npm run web:typecheck                              # vue-tsc
+npm --prefix web run test -- tests/views/ResidentsView.test.ts   # one unit test file
 ```
 
 `web/.env.local` (git-ignored) holds `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (the `ANON_KEY` from `npx supabase status -o env`) and the optional `VITE_SYNCFUSION_LICENSE_KEY`. Playwright needs Chromium once: `(cd web && npx playwright install chromium)`.
 
 Component tests mount with `web/tests/utils/mountWithApp.ts` and mock `@/api/*`. A missing i18n key fails the unit tests. Syncfusion theme CSS is imported per component in `web/src/main.ts` from `@syncfusion/ej2-bootstrap5.3-theme`.
+
+Web conventions the tests rely on: Syncfusion pickers and dropdowns are bound with `:value` and a change handler (not `v-model`); Syncfusion Dialogs stay mounted and bind `visible`, with `v-if` only on the content inside; Grid cells read only precomputed row fields; test ids use `data-testid`; dates are typed into Syncfusion inputs with `typeInto()` from `web/tests/utils/syncfusion.ts`.
 
 Local dev users (password `shelterbridge-dev`): `admin@`, `legal@`, `psychology@` and `volunteer@shelterbridge.test`. Auth emails go to Mailpit at http://127.0.0.1:54324. Google sign-in is optional locally; see README.md.
 

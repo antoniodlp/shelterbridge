@@ -6,7 +6,7 @@ It is being built for FM4 Paso Libre, a migrant shelter in Guadalajara, Mexico. 
 
 ## Status
 
-The database and the web app foundation for the first part are built and tested. You can sign in, the volunteer account is asked who is on shift, and the app shell is in Spanish. The screens for residents, registration and administration come next. The design is in [docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md](docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md).
+The first part, registry and stays, is built and tested: registration with duplicate warnings and photos, stays, outings, the list of who is in the shelter, the person record, search, and the admin screens. Reports come next. The design is in [docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md](docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md).
 
 ## What the first version will do
 
@@ -86,6 +86,8 @@ npm run web:dev
 and open http://localhost:5173.
 
 For local testing there are four made-up users, all with the password `shelterbridge-dev`: `admin@shelterbridge.test`, `legal@shelterbridge.test`, `psychology@shelterbridge.test` and `volunteer@shelterbridge.test`. The volunteer account first asks who is on shift.
+
+After that, the home screen lists the made-up residents from the seed data. From there you can register a person (with a photo from the webcam or a file), record outings, returns and check-outs, and open each person's record. Sign in as `admin@shelterbridge.test` to see the admin screens for users, catalogs, settings, the change log and merging duplicates.
 
 Tests:
 
