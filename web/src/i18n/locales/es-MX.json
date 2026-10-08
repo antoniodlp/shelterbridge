@@ -158,6 +158,42 @@
       "outsideWarning": "Está fuera del albergue: se registrará como salió y no regresó.",
       "submit": "Registrar egreso",
       "done": "Egreso registrado: {name}"
+    },
+    "form": {
+      "entryDate": "Fecha de ingreso",
+      "exitDate": "Fecha de egreso",
+      "bed": "Cama",
+      "caseType": "Tipo de caso",
+      "caseTypePlaceholder": "Selecciona un tipo de caso",
+      "phoneStatus": "Teléfono",
+      "notes": "Notas"
+    }
+  },
+  "registration": {
+    "personSection": "Datos de la persona",
+    "staySection": "Ingreso",
+    "save": "Registrar e ingresar",
+    "saving": "Guardando...",
+    "saved": "Persona registrada. Su estancia quedó abierta.",
+    "fixErrors": "Revisa los campos marcados."
+  },
+  "person": {
+    "form": {
+      "firstName": "Nombre(s)",
+      "lastName": "Apellidos",
+      "birthDate": "Fecha de nacimiento",
+      "birthDateEstimated": "Fecha aproximada",
+      "age": "Edad: {age}",
+      "gender": "Género",
+      "genderPlaceholder": "Selecciona",
+      "country": "País de origen",
+      "countryPlaceholder": "Selecciona un país",
+      "region": "Departamento o estado",
+      "carer": "Persona que lo cuida",
+      "carerHelp": "Busca entre las personas que están en el albergue.",
+      "carerPlaceholder": "Elige a la persona que lo cuida",
+      "carerFilter": "Escribe un nombre",
+      "carerLoading": "Cargando personas..."
     }
   },
   "photos": {
