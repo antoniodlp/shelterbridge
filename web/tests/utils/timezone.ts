@@ -7,10 +7,15 @@ import { afterEach, beforeEach } from 'vitest'
  */
 export const TEST_TIMEZONES = ['America/Mexico_City', 'Pacific/Auckland'] as const
 
+// The machine's zone, read once at load, before any test changes TZ. Deleting
+// TZ again does not bring it back: Node keeps the last zone it was given.
+const systemZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
 /**
  * Runs the tests of the enclosing describe block with the process in `timezone`.
- * The original TZ is restored after every test, also when the test fails, so
- * other tests keep the machine's zone (Node reads a runtime TZ change for Date).
+ * After every test, also a failed one, TZ goes back to its original value, or to
+ * the machine's zone when it was unset, so other tests keep the machine's zone
+ * (Node reads a runtime TZ change for Date).
  */
 export function useTimezone(timezone: string): void {
   let original: string | undefined
@@ -19,7 +24,6 @@ export function useTimezone(timezone: string): void {
     process.env.TZ = timezone
   })
   afterEach(() => {
-    if (original === undefined) delete process.env.TZ
-    else process.env.TZ = original
+    process.env.TZ = original ?? systemZone
   })
 }
