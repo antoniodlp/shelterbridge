@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { DatePickerComponent as EjsDatepicker } from '@syncfusion/ej2-vue-calendars'
+import { usePickerLabel } from '@/components/forms/usePickerLabel'
 import { fromLocalDate, toLocalDate } from '@/lib/dates'
 
 const props = withDefaults(
@@ -28,12 +29,7 @@ function onChange(args: { value: Date | null }): void {
   if (next !== props.modelValue) emit('update:modelValue', next)
 }
 
-// Syncfusion gives its input aria-label="datepicker" when it has none, and an aria-label
-// wins over the visible <label for>. Drop it so the form's label names the field.
-const picker = ref<{ ej2Instances: { inputElement: HTMLInputElement } } | null>(null)
-function onCreated(): void {
-  picker.value?.ej2Instances.inputElement.removeAttribute('aria-label')
-}
+const { picker, onCreated } = usePickerLabel()
 </script>
 
 <template>

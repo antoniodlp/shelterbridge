@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { DateTimePickerComponent as EjsDatetimepicker } from '@syncfusion/ej2-vue-calendars'
+import { usePickerLabel } from '@/components/forms/usePickerLabel'
 import { fromWallClock, toWallClock } from '@/lib/dates'
 import { useSettingsStore } from '@/stores/settings'
 
@@ -26,17 +27,21 @@ function onChange(args: { value: Date | null }): void {
   const next = fromWallClock(args.value, settings.timezone)
   if (!sameMinute(next, props.modelValue)) emit('update:modelValue', next)
 }
+
+const { picker, onCreated } = usePickerLabel()
 </script>
 
 <template>
   <ejs-datetimepicker
     :id="id"
+    ref="picker"
     :value="pickerValue"
     format="dd/MM/yyyy HH:mm"
     time-format="HH:mm"
     :step="5"
     :max="maxValue"
     :css-class="invalid ? 'e-error' : ''"
+    @created="onCreated"
     @change="onChange"
   />
 </template>

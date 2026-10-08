@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { defineComponent, h } from 'vue'
 import DateTimeField from '@/components/forms/DateTimeField.vue'
 import { mountWithApp } from '../../utils/mountWithApp'
 import { typeInto } from '../../utils/syncfusion'
@@ -52,5 +53,23 @@ describe.each(TEST_TIMEZONES)('DateTimeField with the browser in %s', (browserZo
     })
     await typeInto(wrapper.find('#when'), '')
     expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([null])
+  })
+})
+
+// Syncfusion names its input "datetimepicker" unless the input already has an aria-label,
+// which hides the visible <label for>. People using a screen reader need the label.
+describe('DateTimeField accessible name', () => {
+  it('is named by the visible label, not by "datetimepicker"', async () => {
+    const Host = defineComponent({
+      render: () =>
+        h('div', [
+          h('label', { for: 'when' }, 'Hora de prueba'),
+          h(DateTimeField, { id: 'when', modelValue: '2026-10-07T16:30:00.000Z' }),
+        ]),
+    })
+    await mountWithApp(Host)
+    const input = document.getElementById('when') as HTMLInputElement
+    expect(input.hasAttribute('aria-label')).toBe(false)
+    expect(Array.from(input.labels ?? []).map((label) => label.textContent)).toEqual(['Hora de prueba'])
   })
 })
