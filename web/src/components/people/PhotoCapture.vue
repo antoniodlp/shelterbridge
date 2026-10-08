@@ -4,7 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { makePhotoPair, type PhotoPair } from '@/lib/imageResize'
 
 withDefaults(defineProps<{ idPrefix?: string }>(), { idPrefix: 'photo' })
-const emit = defineEmits<{ captured: [photo: PhotoPair] }>()
+// busy: true while a chosen picture is being resized, so a form around this component can wait for it.
+const emit = defineEmits<{ captured: [photo: PhotoPair]; busy: [active: boolean] }>()
 
 const { t } = useI18n()
 // Desktops use the webcam; phones use the file input, which opens the camera directly.
@@ -47,15 +48,22 @@ async function startCamera(): Promise<void> {
   }
 }
 
+function setBusy(active: boolean): void {
+  busy.value = active
+  emit('busy', active)
+}
+
 async function process(source: Blob): Promise<void> {
-  busy.value = true
+  // A picture was chosen, so the webcam preview is no longer needed (and its light should go off).
+  stopCamera()
+  setBusy(true)
   problem.value = null
   try {
     emit('captured', await makePhotoPair(source))
   } catch {
     problem.value = 'photos.processFailed'
   } finally {
-    busy.value = false
+    setBusy(false)
   }
 }
 

@@ -26,6 +26,10 @@ const url = computed(() => (signed.value && signed.value.path === props.photoPat
 const capturing = ref(false)
 const uploading = ref(false)
 const pending = computed(() => pendingPhotos.get(props.personId))
+// Right after a registration the person should know they are registered; later it is just a photo.
+const pendingMessage = computed(() =>
+  pendingPhotos.isAfterRegistration(props.personId) ? 'photos.uploadFailed' : 'photos.saveFailed',
+)
 
 function setUploading(active: boolean): void {
   uploading.value = active
@@ -88,7 +92,7 @@ async function retry(): Promise<void> {
       <img v-if="url" :src="url" :alt="t('photos.thumbAlt', { name })" class="img-fluid rounded mb-3 person-photo" />
       <div v-else class="text-body-secondary border rounded py-4 mb-3">{{ t('photos.none') }}</div>
       <div v-if="pending" class="alert alert-warning text-start" role="alert" data-testid="photo-pending">
-        <p class="mb-2">{{ t('photos.uploadFailed') }}</p>
+        <p class="mb-2">{{ t(pendingMessage) }}</p>
         <button v-if="!readonly" type="button" class="btn btn-sm btn-warning" :disabled="uploading" @click="retry">
           {{ t('photos.retry') }}
         </button>

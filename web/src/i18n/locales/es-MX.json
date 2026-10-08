@@ -314,6 +314,7 @@
     "change": "Cambiar foto",
     "saved": "Foto guardada.",
     "uploadFailed": "La foto no se pudo guardar. La persona sí quedó registrada.",
+    "saveFailed": "La foto no se pudo guardar. Puedes reintentarlo.",
     "retry": "Reintentar foto"
   },
   "search": {

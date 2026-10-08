@@ -152,10 +152,32 @@ describe('PersonPhoto', () => {
     })
   })
 
-  it('offers the retry for a photo that failed during registration', async () => {
-    usePendingPhotos().set(uuid(1), pair)
+  it('says the person is registered when the photo failed during registration', async () => {
+    usePendingPhotos().set(uuid(1), pair, { afterRegistration: true })
     const { wrapper } = await mountPhoto()
-    expect(wrapper.find('[data-testid="photo-pending"]').text()).toContain('La foto no se pudo guardar.')
+    expect(wrapper.find('[data-testid="photo-pending"]').text()).toContain(
+      'La foto no se pudo guardar. La persona sí quedó registrada.',
+    )
+  })
+
+  it('uses a neutral message when a photo change failed on an existing record', async () => {
+    vi.mocked(uploadPersonPhoto).mockRejectedValueOnce(new Error('offline'))
+    const { wrapper } = await mountPhoto({ photoPath: path })
+    await buttonLabeled(wrapper, 'Cambiar foto').trigger('click')
+    wrapper.findComponent(PhotoCapture).vm.$emit('captured', pair)
+    await vi.waitFor(() => expect(wrapper.find('[data-testid="photo-pending"]').exists()).toBe(true))
+    const text = wrapper.find('[data-testid="photo-pending"]').text()
+    expect(text).toContain('La foto no se pudo guardar. Puedes reintentarlo.')
+    expect(text).not.toContain('registrada')
+  })
+
+  it('drops the registration wording when a later change fails for the same person', async () => {
+    usePendingPhotos().set(uuid(1), pair, { afterRegistration: true })
+    vi.mocked(uploadPersonPhoto).mockRejectedValueOnce(new Error('offline'))
+    const { wrapper } = await mountPhoto()
+    await buttonLabeled(wrapper, 'Reintentar foto').trigger('click')
+    await vi.waitFor(() => expect(notify.error).toHaveBeenCalled())
+    expect(wrapper.find('[data-testid="photo-pending"]').text()).toContain('Puedes reintentarlo.')
   })
 
   it('offers no changes on a merged record', async () => {

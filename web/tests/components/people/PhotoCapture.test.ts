@@ -75,6 +75,47 @@ describe('PhotoCapture', () => {
     await vi.waitFor(() => expect(stop).toHaveBeenCalledTimes(1))
   })
 
+  it('turns the camera off when a file is picked while it is open', async () => {
+    vi.mocked(makePhotoPair).mockResolvedValue(pair)
+    // jsdom does not implement video playback.
+    const play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue()
+    const stop = vi.fn()
+    setMediaDevices({ getUserMedia: vi.fn(async () => ({ getTracks: () => [{ stop }] })) })
+    const { wrapper } = await mountWithApp(PhotoCapture)
+    const camera = wrapper.findAll('button').find((button) => button.text() === 'Usar cámara')
+    await camera?.trigger('click')
+    await vi.waitFor(() => expect(wrapper.find('video').exists()).toBe(true))
+    expect(stop).not.toHaveBeenCalled()
+    await chooseFile(wrapper, new File(['raw'], 'foto.png', { type: 'image/png' }))
+    await vi.waitFor(() => expect(wrapper.emitted('captured')).toHaveLength(1))
+    expect(stop).toHaveBeenCalledTimes(1)
+    expect(wrapper.find('video').exists()).toBe(false)
+    play.mockRestore()
+  })
+
+  it('reports when it starts and stops preparing a photo', async () => {
+    let finish: (value: typeof pair) => void = () => {}
+    vi.mocked(makePhotoPair).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve
+        }),
+    )
+    const { wrapper } = await mountWithApp(PhotoCapture)
+    await chooseFile(wrapper, new File(['raw'], 'foto.png', { type: 'image/png' }))
+    expect(wrapper.emitted('busy')).toEqual([[true]])
+    finish(pair)
+    await vi.waitFor(() => expect(wrapper.emitted('busy')).toEqual([[true], [false]]))
+    expect(wrapper.emitted('captured')).toEqual([[pair]])
+  })
+
+  it('reports that it is no longer busy when the image cannot be read', async () => {
+    vi.mocked(makePhotoPair).mockRejectedValue(new Error('decode'))
+    const { wrapper } = await mountWithApp(PhotoCapture)
+    await chooseFile(wrapper, new File(['raw'], 'roto.heic', { type: 'image/heic' }))
+    await vi.waitFor(() => expect(wrapper.emitted('busy')).toEqual([[true], [false]]))
+  })
+
   it('reports an image it cannot read', async () => {
     vi.mocked(makePhotoPair).mockRejectedValue(new Error('decode'))
     const { wrapper } = await mountWithApp(PhotoCapture)
