@@ -1,9 +1,12 @@
 import { vi } from 'vitest'
+import { installMissingKeyGuard } from './utils/i18nGuard'
 
 // Unit tests never talk to Supabase, but src/api/client.ts needs a URL and key
 // to construct the client when a test imports it.
 if (!import.meta.env.VITE_SUPABASE_URL) vi.stubEnv('VITE_SUPABASE_URL', 'http://127.0.0.1:54321')
 if (!import.meta.env.VITE_SUPABASE_ANON_KEY) vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'unit-test-anon-key')
+
+installMissingKeyGuard()
 
 // jsdom lacks these browser APIs, which Syncfusion components use.
 if (typeof window !== 'undefined' && !window.matchMedia) {
