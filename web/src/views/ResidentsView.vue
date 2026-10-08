@@ -3,10 +3,12 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { isApiError } from '@/api/errors'
 import { endOuting, startOuting } from '@/api/outings'
+import { checkOut } from '@/api/stays'
 import PageHeader from '@/components/common/PageHeader.vue'
 import OutingStartDialog from '@/components/outings/OutingStartDialog.vue'
 import HeadcountBar from '@/components/residents/HeadcountBar.vue'
 import ResidentsGrid from '@/components/residents/ResidentsGrid.vue'
+import CheckOutDialog from '@/components/stays/CheckOutDialog.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import { useNotify } from '@/composables/useNotify'
 import { type ResidentRow, useResidents } from '@/composables/useResidents'
@@ -17,6 +19,7 @@ const { confirm } = useConfirm()
 const { rows, counts, loading, query, busyStayId, findRow, reload } = useResidents()
 
 const outingTarget = ref<ResidentRow | null>(null)
+const checkOutTarget = ref<ResidentRow | null>(null)
 
 onMounted(reload)
 
@@ -86,6 +89,20 @@ async function recordReturn(stayId: string): Promise<void> {
     notify.success('outings.ended', { name: row.full_name })
   })
 }
+
+function openCheckOut(stayId: string): void {
+  checkOutTarget.value = findRow(stayId) ?? null
+}
+
+async function confirmCheckOut(exitDate: string): Promise<void> {
+  const row = checkOutTarget.value
+  checkOutTarget.value = null
+  if (!row) return
+  await runRowAction(row, async () => {
+    await checkOut(row.stay_id, exitDate)
+    notify.success('stays.checkOut.done', { name: row.full_name })
+  })
+}
 </script>
 
 <template>
@@ -110,12 +127,18 @@ async function recordReturn(stayId: string): Promise<void> {
         autocomplete="off"
       />
     </div>
-    <ResidentsGrid :rows="rows" @start-outing="openOuting" @end-outing="recordReturn" />
+    <ResidentsGrid
+      :rows="rows"
+      @start-outing="openOuting"
+      @end-outing="recordReturn"
+      @check-out="openCheckOut"
+    />
     <OutingStartDialog
       :name="outingTarget?.full_name ?? null"
       @confirm="confirmOuting"
       @cancel="outingTarget = null"
     />
+    <CheckOutDialog :resident="checkOutTarget" @confirm="confirmCheckOut" @cancel="checkOutTarget = null" />
   </div>
 </template>
 

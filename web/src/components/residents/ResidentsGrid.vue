@@ -15,6 +15,7 @@ defineProps<{ rows: ResidentRow[] }>()
 const emit = defineEmits<{
   'start-outing': [stayId: string]
   'end-outing': [stayId: string]
+  'check-out': [stayId: string]
 }>()
 
 const { t } = useI18n()
@@ -157,6 +158,14 @@ const filterSettings = { type: 'CheckBox' }
               @click="emit('end-outing', data.stay_id)"
             >
               {{ t('outings.end') }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-danger"
+              :disabled="data.busy"
+              @click="emit('check-out', data.stay_id)"
+            >
+              {{ t('stays.checkOut.action') }}
             </button>
             <RouterLink class="btn btn-sm btn-link" :to="{ name: 'person', params: { id: data.person_id } }">{{
               t('residents.viewRecord')

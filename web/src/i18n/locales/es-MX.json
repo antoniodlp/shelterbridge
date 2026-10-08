@@ -149,6 +149,17 @@
     "started": "Salida registrada: {name}",
     "ended": "Regreso registrado: {name}"
   },
+  "stays": {
+    "checkOut": {
+      "action": "Egreso",
+      "title": "Registrar egreso",
+      "exitDate": "Fecha de egreso",
+      "phoneWarning": "Tiene su teléfono en custodia: devolver el teléfono.",
+      "outsideWarning": "Está fuera del albergue: se registrará como salió y no regresó.",
+      "submit": "Registrar egreso",
+      "done": "Egreso registrado: {name}"
+    }
+  },
   "photos": {
     "thumbAlt": "Foto de {name}"
   }
