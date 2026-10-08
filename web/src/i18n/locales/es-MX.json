@@ -175,7 +175,19 @@
     "save": "Registrar e ingresar",
     "saving": "Guardando...",
     "saved": "Persona registrada. Su estancia quedó abierta.",
-    "fixErrors": "Revisa los campos marcados."
+    "fixErrors": "Revisa los campos marcados.",
+    "duplicates": {
+      "title": "Posibles coincidencias",
+      "intro": "Antes de continuar, revisa si la persona ya estuvo en el albergue.",
+      "checking": "Buscando coincidencias...",
+      "failed": "No se pudieron buscar coincidencias. Puedes continuar con el registro.",
+      "age": "{age} años",
+      "lastStay": "Última estancia: {from} a {to}",
+      "staying": "En el albergue desde {from}",
+      "noStays": "Sin estancias registradas",
+      "isThisPerson": "Es esta persona",
+      "isNewPerson": "Es una persona nueva"
+    }
   },
   "person": {
     "form": {

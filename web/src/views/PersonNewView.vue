@@ -5,10 +5,12 @@ import { useRouter } from 'vue-router'
 import { registerAndCheckIn } from '@/api/people'
 import PageHeader from '@/components/common/PageHeader.vue'
 import { type FieldErrors, hasErrors } from '@/components/forms/fieldErrors'
+import DuplicatePanel from '@/components/people/DuplicatePanel.vue'
 import PersonForm from '@/components/people/PersonForm.vue'
 import { emptyPerson, formToPersonInput, validatePerson } from '@/components/people/personFormModel'
 import StayForm from '@/components/stays/StayForm.vue'
 import { emptyStay, formToStayInput, validateStay } from '@/components/stays/stayFormModel'
+import { useDuplicateCheck } from '@/composables/useDuplicateCheck'
 import { useNotify } from '@/composables/useNotify'
 import { useShelterTime } from '@/composables/useShelterTime'
 
@@ -23,6 +25,27 @@ const personErrors = ref<FieldErrors>({})
 const stayErrors = ref<FieldErrors>({})
 const saving = ref(false)
 const showErrorSummary = computed(() => hasErrors(personErrors.value) || hasErrors(stayErrors.value))
+
+const { candidates, checking, failed } = useDuplicateCheck(() => ({
+  first_name: person.value.first_name,
+  last_name: person.value.last_name,
+  birth_date: person.value.birth_date,
+  country_code: person.value.country_code,
+}))
+// Candidates dismissed with "Es una persona nueva" stay hidden; new ones still show.
+const dismissed = ref<Set<string>>(new Set())
+const visibleCandidates = computed(() =>
+  candidates.value.filter((candidate) => !dismissed.value.has(candidate.person_id)),
+)
+const showPanel = computed(() => visibleCandidates.value.length > 0 || failed.value)
+
+function dismissCandidates(): void {
+  dismissed.value = new Set([...dismissed.value, ...candidates.value.map((candidate) => candidate.person_id)])
+}
+
+async function openCandidate(personId: string): Promise<void> {
+  await router.push({ name: 'person', params: { id: personId }, query: { checkIn: '1' } })
+}
 
 async function save(): Promise<void> {
   if (saving.value) return
@@ -79,6 +102,16 @@ async function save(): Promise<void> {
             {{ saving ? t('registration.saving') : t('registration.save') }}
           </button>
         </div>
+        <aside class="col-lg-4">
+          <DuplicatePanel
+            v-if="showPanel"
+            :candidates="visibleCandidates"
+            :checking="checking"
+            :failed="failed"
+            @select="openCandidate"
+            @dismiss="dismissCandidates"
+          />
+        </aside>
       </div>
     </form>
   </div>

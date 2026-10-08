@@ -38,3 +38,36 @@ export async function registerAndCheckIn(
   if (error) throw toApiError(error)
   return data as unknown as { person_id: string; stay_id: string }
 }
+
+export interface PersonSearchResult {
+  person_id: string
+  first_name: string
+  last_name: string | null
+  birth_date: string | null
+  birth_date_estimated: boolean
+  country_code: string | null
+  photo_path: string | null
+  score: number
+  last_entry_date: string | null
+  last_exit_date: string | null
+  has_open_stay: boolean
+}
+
+export type DuplicateCandidate = Omit<PersonSearchResult, 'has_open_stay'>
+
+/** Up to 5 likely matches, best first. Merged records are never suggested. */
+export async function findPossibleDuplicates(input: {
+  first_name: string
+  last_name?: string | null
+  birth_date?: string | null
+  country_code?: string | null
+}): Promise<DuplicateCandidate[]> {
+  const { data, error } = await supabase.rpc('find_possible_duplicates', {
+    p_first_name: cleanText(input.first_name) ?? '',
+    p_last_name: cleanText(input.last_name) ?? undefined,
+    p_birth_date: input.birth_date ?? undefined,
+    p_country_code: input.country_code ?? undefined,
+  })
+  if (error) throw toApiError(error)
+  return (data ?? []) as DuplicateCandidate[]
+}
