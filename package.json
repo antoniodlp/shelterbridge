@@ -6,7 +6,13 @@
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
     "db:test": "supabase test db",
-    "db:lint": "supabase db lint --level error --fail-on error"
+    "db:lint": "supabase db lint --level error --fail-on error",
+    "web:dev": "npm --prefix web run dev",
+    "web:test": "npm --prefix web run test",
+    "web:test:integration": "npm --prefix web run test:integration",
+    "web:e2e": "npm --prefix web run e2e",
+    "web:lint": "npm --prefix web run lint",
+    "web:typecheck": "npm --prefix web run typecheck"
   },
   "devDependencies": {
     "supabase": "^2.120.0"
