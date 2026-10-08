@@ -22,7 +22,9 @@ onMounted(reload)
 
 /**
  * Runs one row action at a time and always reloads afterwards, so a row that
- * another computer changed shows its real state after the error.
+ * another computer changed shows its real state after the error. The lock is
+ * released only when the fresh list is in, because until then the rows still
+ * show the old state and a second click would repeat the action.
  */
 async function runRowAction(row: ResidentRow, action: () => Promise<void>): Promise<void> {
   if (busyStayId.value) return
@@ -32,8 +34,11 @@ async function runRowAction(row: ResidentRow, action: () => Promise<void>): Prom
   } catch (error) {
     notify.error(error)
   } finally {
-    busyStayId.value = null
-    await reload()
+    try {
+      await reload()
+    } finally {
+      busyStayId.value = null
+    }
   }
 }
 

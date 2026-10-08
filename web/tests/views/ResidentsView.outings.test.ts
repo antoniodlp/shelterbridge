@@ -3,6 +3,7 @@ import { flushPromises } from '@vue/test-utils'
 import { ApiError } from '@/api/errors'
 import { endOuting, startOuting } from '@/api/outings'
 import { listCurrentResidents } from '@/api/stays'
+import type { CurrentResident } from '@/types/domain'
 import ResidentsView from '@/views/ResidentsView.vue'
 import { makeResident, uuid } from '../fixtures/data'
 import { mountWithApp } from '../utils/mountWithApp'
@@ -191,6 +192,38 @@ describe('ResidentsView outings', () => {
     button.click()
     await flushPromises()
     expect(endOuting).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps the row actions locked until the reload after an action returns', async () => {
+    vi.mocked(endOuting).mockResolvedValue(uuid(201))
+    const w = await mountLoaded()
+    let finishReload: (rows: CurrentResident[]) => void = () => {}
+    vi.mocked(listCurrentResidents).mockReturnValueOnce(
+      new Promise<CurrentResident[]>((resolve) => {
+        finishReload = resolve
+      }),
+    )
+    await buttonIn(rowFor(w, 'Tomás'), 'Regreso').trigger('click')
+    await vi.waitFor(() => expect(listCurrentResidents).toHaveBeenCalledTimes(2))
+    await flushPromises()
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    // The list still shows the old state, so a second click must not reach the server.
+    const stale = buttonIn(rowFor(w, 'Tomás'), 'Regreso').element as HTMLButtonElement
+    expect(stale.disabled).toBe(true)
+    stale.click()
+    await flushPromises()
+    expect(endOuting).toHaveBeenCalledTimes(1)
+
+    finishReload([residents[0]!, makeResident({ ...residents[1]!, presence: 'inside', out_since: null, open_outing_id: null })])
+    await vi.waitFor(
+      () => {
+        const salida = buttonIn(rowFor(w, 'Tomás'), 'Salida').element as HTMLButtonElement
+        expect(salida.disabled).toBe(false)
+      },
+      { timeout: 5000 },
+    )
+    expect((buttonIn(rowFor(w, 'Rosa Elena'), 'Salida').element as HTMLButtonElement).disabled).toBe(false)
   })
 
   it('disables every row action while one action is running', async () => {
