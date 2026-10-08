@@ -98,7 +98,8 @@ export function useResidents() {
       phone_status: (resident.phone_status ?? 'none') as PhoneStatus,
       is_minor: resident.is_minor === true,
       is_unaccompanied_minor: resident.is_unaccompanied_minor === true,
-      busy: busyStayId.value !== null && busyStayId.value === resident.stay_id,
+      // One row action runs at a time, so every row's buttons wait for it.
+      busy: busyStayId.value !== null,
     }
   }
 

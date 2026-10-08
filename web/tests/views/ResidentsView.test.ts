@@ -7,8 +7,11 @@ import { makeResident, uuid } from '../fixtures/data'
 import { mountWithApp } from '../utils/mountWithApp'
 
 const notify = vi.hoisted(() => ({ success: vi.fn(), error: vi.fn() }))
+const confirm = vi.hoisted(() => vi.fn())
 vi.mock('@/composables/useNotify', () => ({ useNotify: () => notify }))
+vi.mock('@/composables/useConfirm', () => ({ useConfirm: () => ({ confirm }) }))
 vi.mock('@/api/stays', () => ({ listCurrentResidents: vi.fn() }))
+vi.mock('@/api/outings', () => ({ startOuting: vi.fn(), endOuting: vi.fn() }))
 vi.mock('@/api/photos', () => ({
   photoPathFor: (id: string) => `${id}.jpg`,
   thumbPathFor: (path: string) => path.replace(/\.jpg$/, '_thumb.jpg'),

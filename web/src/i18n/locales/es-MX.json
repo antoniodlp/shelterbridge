@@ -133,6 +133,22 @@
     "unaccompaniedBadge": "Menor sin acompañante",
     "viewRecord": "Ver ficha"
   },
+  "outings": {
+    "start": "Salida",
+    "end": "Regreso",
+    "startDialog": {
+      "title": "Registrar salida",
+      "commentLabel": "Comentario (opcional)",
+      "commentPlaceholder": "Por ejemplo: cita en el consulado",
+      "submit": "Registrar salida"
+    },
+    "exception": {
+      "title": "Salida adicional",
+      "confirm": "Registrar excepción"
+    },
+    "started": "Salida registrada: {name}",
+    "ended": "Regreso registrado: {name}"
+  },
   "photos": {
     "thumbAlt": "Foto de {name}"
   }

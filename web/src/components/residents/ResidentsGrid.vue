@@ -12,6 +12,10 @@ import PersonThumb from '@/components/people/PersonThumb.vue'
 import type { ResidentRow } from '@/composables/useResidents'
 
 defineProps<{ rows: ResidentRow[] }>()
+const emit = defineEmits<{
+  'start-outing': [stayId: string]
+  'end-outing': [stayId: string]
+}>()
 
 const { t } = useI18n()
 provide('grid', [Sort, Filter])
@@ -136,6 +140,24 @@ const filterSettings = { type: 'CheckBox' }
       >
         <template #actions="{ data }">
           <div class="d-flex flex-wrap gap-1">
+            <button
+              v-if="data.presence === 'inside'"
+              type="button"
+              class="btn btn-sm btn-outline-primary"
+              :disabled="data.busy"
+              @click="emit('start-outing', data.stay_id)"
+            >
+              {{ t('outings.start') }}
+            </button>
+            <button
+              v-else
+              type="button"
+              class="btn btn-sm btn-outline-success"
+              :disabled="data.busy"
+              @click="emit('end-outing', data.stay_id)"
+            >
+              {{ t('outings.end') }}
+            </button>
             <RouterLink class="btn btn-sm btn-link" :to="{ name: 'person', params: { id: data.person_id } }">{{
               t('residents.viewRecord')
             }}</RouterLink>
