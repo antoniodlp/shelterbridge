@@ -101,5 +101,39 @@
   "presence": {
     "inside": "Dentro",
     "outside": "Fuera"
+  },
+  "residents": {
+    "refresh": "Actualizar",
+    "search": {
+      "label": "Buscar por nombre o cama",
+      "placeholder": "Nombre o cama"
+    },
+    "headcount": {
+      "label": "Conteo de personas",
+      "total": "En el albergue",
+      "inside": "Dentro",
+      "outside": "Fuera",
+      "minors": "Menores",
+      "unaccompanied": "Menores sin acompañante"
+    },
+    "columns": {
+      "photo": "Foto",
+      "name": "Nombre",
+      "age": "Edad",
+      "gender": "Género",
+      "country": "País",
+      "bed": "Cama",
+      "entryDate": "Ingreso",
+      "days": "Días",
+      "presence": "Presencia",
+      "outSince": "Fuera desde",
+      "unaccompanied": "Acompañamiento",
+      "actions": "Acciones"
+    },
+    "unaccompaniedBadge": "Menor sin acompañante",
+    "viewRecord": "Ver ficha"
+  },
+  "photos": {
+    "thumbAlt": "Foto de {name}"
   }
 }
