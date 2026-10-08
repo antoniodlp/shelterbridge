@@ -166,7 +166,14 @@ describe('MergeView', () => {
     await pick(wrapper, 'first', uuid(1))
     await pick(wrapper, 'second', uuid(1))
     expect(wrapper.text()).toContain('Elegiste el mismo registro dos veces.')
+    // Choosing a record to keep removes the other reason for the button to be disabled, so
+    // only the same-record guard is left to hold it.
+    await wrapper.find('#merge-keep-first').setValue(true)
     expect(mergeButton(wrapper).attributes('disabled')).toBeDefined()
+    await mergeButton(wrapper).trigger('click')
+    await flushPromises()
+    expect(confirm).not.toHaveBeenCalled()
+    expect(mergePeople).not.toHaveBeenCalled()
   })
 
   it('does not merge when the confirmation is declined', async () => {
