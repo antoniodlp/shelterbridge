@@ -10,7 +10,7 @@ The main purpose is to manage the people staying at the shelter and their needs.
 
 ## Status
 
-The database for sub-project 1 is implemented and tested (Plan 1). The web app comes next.
+The database (Plan 1) and the web foundation (Plan 2) for sub-project 1 are implemented and tested: sign-in, roles, the shift screen, the app shell in Spanish and the `api/` layer. The feature screens (Plan 3) come next.
 
 - Spec for sub-project 1: [docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md](docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md)
 - Implementation plans go in `docs/superpowers/plans/`.
@@ -43,19 +43,31 @@ docs/       superpowers/specs/, superpowers/plans/
 
 ## Commands
 
-Docker Desktop must be running for every `db:*` script.
+Node.js 24.15 or later (or 22.22.2 or later). Docker Desktop must be running for every `db:*` script.
 
 ```bash
 npm install                                        # installs the Supabase CLI
+npm --prefix web install                           # installs the web app
 npm run db:start                                   # starts local Supabase (Studio: http://127.0.0.1:54323)
 npm run db:reset                                   # rebuilds the local database from migrations and seed.sql
 npm run db:test                                    # runs the pgTAP tests in supabase/tests/database
 npm run db:lint                                    # checks SQL functions for errors
+npm run db:types                                   # regenerates web/src/types/database.ts after a migration
 npm run db:stop                                    # stops local Supabase
 node supabase/scripts/generate-countries-migration.mjs   # regenerates the countries data migration
+npm run web:dev                                    # web app at http://localhost:5173
+npm run web:test                                   # unit and component tests (Vitest, jsdom)
+npm run web:test:integration                       # web/src/api against local Supabase (run db:reset first)
+npm run web:e2e                                    # Playwright end-to-end tests (run db:reset first)
+npm run web:lint                                   # ESLint, including the Supabase import boundary
+npm run web:typecheck                              # vue-tsc
 ```
 
-Local dev users (password `shelterbridge-dev`): `admin@`, `legal@`, `psychology@` and `volunteer@shelterbridge.test`. Auth emails go to Mailpit at http://127.0.0.1:54324.
+`web/.env.local` (git-ignored) holds `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (the `ANON_KEY` from `npx supabase status -o env`) and the optional `VITE_SYNCFUSION_LICENSE_KEY`. Playwright needs Chromium once: `(cd web && npx playwright install chromium)`.
+
+Component tests mount with `web/tests/utils/mountWithApp.ts` and mock `@/api/*`. A missing i18n key fails the unit tests. Syncfusion theme CSS is imported per component in `web/src/main.ts` from `@syncfusion/ej2-bootstrap5.3-theme`.
+
+Local dev users (password `shelterbridge-dev`): `admin@`, `legal@`, `psychology@` and `volunteer@shelterbridge.test`. Auth emails go to Mailpit at http://127.0.0.1:54324. Google sign-in is optional locally; see README.md.
 
 ## Rules
 

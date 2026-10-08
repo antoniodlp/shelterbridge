@@ -6,7 +6,7 @@ It is being built for FM4 Paso Libre, a migrant shelter in Guadalajara, Mexico. 
 
 ## Status
 
-The database for the first part is built and tested. The web app is next. The design is in [docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md](docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md).
+The database and the web app foundation for the first part are built and tested. You can sign in, the volunteer account is asked who is on shift, and the app shell is in Spanish. The screens for residents, registration and administration come next. The design is in [docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md](docs/superpowers/specs/2026-10-07-shelterbridge-registry-and-stays-design.md).
 
 ## What the first version will do
 
@@ -56,7 +56,9 @@ docs/       design specs and implementation plans
 
 ## Development
 
-You need Node.js 20 or later and Docker Desktop.
+You need Node.js 24.15 or later (or 22.22.2 or later) and Docker Desktop.
+
+Database:
 
 ```bash
 npm install
@@ -65,9 +67,38 @@ npm run db:reset
 npm run db:test
 ```
 
-`db:start` prints the local URLs. The database admin UI (Supabase Studio) is at http://127.0.0.1:54323.
+`db:start` prints the local URLs. The database admin UI (Supabase Studio) is at http://127.0.0.1:54323, and the emails the app sends locally appear in Mailpit at http://127.0.0.1:54324.
 
-For local testing there are four made-up users, all with the password `shelterbridge-dev`: `admin@shelterbridge.test`, `legal@shelterbridge.test`, `psychology@shelterbridge.test` and `volunteer@shelterbridge.test`.
+Web app:
+
+```bash
+npm --prefix web install
+cp web/.env.example web/.env.local
+npx supabase status -o env
+```
+
+Copy the `ANON_KEY` value from the last command into `VITE_SUPABASE_ANON_KEY` in `web/.env.local`. If you have a Syncfusion license key, put it in `VITE_SYNCFUSION_LICENSE_KEY`; without one, Syncfusion shows a license banner. Then:
+
+```bash
+npm run web:dev
+```
+
+and open http://localhost:5173.
+
+For local testing there are four made-up users, all with the password `shelterbridge-dev`: `admin@shelterbridge.test`, `legal@shelterbridge.test`, `psychology@shelterbridge.test` and `volunteer@shelterbridge.test`. The volunteer account first asks who is on shift.
+
+Tests:
+
+```bash
+npm run web:test                               # unit and component tests
+npm run web:test:integration                   # the api layer against local Supabase
+(cd web && npx playwright install chromium)    # once, for the end-to-end tests
+npm run web:e2e                                # end-to-end tests in a browser
+npm run web:lint
+npm run web:typecheck
+```
+
+Run `npm run db:reset` before the integration and end-to-end tests. After changing a migration, run `npm run db:types` to regenerate the database types for the web app.
 
 ## Google sign-in for local development
 
