@@ -43,7 +43,7 @@ Planned for later: an offline mode, individual volunteer accounts, bed managemen
 
 - **Backend:** [Supabase](https://supabase.com) for Postgres, authentication and file storage.
 - **Frontend:** a [Vue 3](https://vuejs.org) single page app with Vite and TypeScript.
-- **UI:** [Syncfusion](https://www.syncfusion.com/vue-components) components with [Bootstrap 5](https://getbootstrap.com).
+- **UI:** [Syncfusion](https://www.syncfusion.com/vue-components) components with [Bootstrap 5](https://getbootstrap.com). Text is set in [Clarity City](https://github.com/googlefonts/clarity-city), bundled with the app under the SIL Open Font License.
 - **Translation:** vue-i18n for app text, with Spanish (es-MX) as the main language.
 
 ## Repository layout (planned)

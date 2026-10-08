@@ -1,0 +1,31 @@
+/* Global styles. Imported last from main.ts so these custom properties win over
+   the Bootstrap and Syncfusion defaults. */
+
+/* Clarity City, served from this app instead of Google Fonts so that no page view
+   reaches a third party. Variable fonts: each file covers weights 100 to 900.
+   License: fonts/clarity-city/OFL.txt (SIL Open Font License 1.1). */
+@font-face {
+  font-family: "Clarity City";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./fonts/clarity-city/clarity-city-wght.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Clarity City";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./fonts/clarity-city/clarity-city-italic-wght.woff2") format("woff2");
+}
+
+:root {
+  --sb-font-sans: "Clarity City", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  /* Bootstrap: body text, headings and form controls. */
+  --bs-font-sans-serif: var(--sb-font-sans);
+  /* Syncfusion Bootstrap 5.3 theme: every .e-control uses --e-font-family, built from --e-font-name. */
+  --e-font-name: var(--sb-font-sans);
+}

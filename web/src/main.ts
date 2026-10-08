@@ -26,6 +26,8 @@ import '@syncfusion/ej2-bootstrap5.3-theme/styles/h-scroll/h-scroll.css'
 import '@syncfusion/ej2-bootstrap5.3-theme/styles/v-scroll/v-scroll.css'
 import '@syncfusion/ej2-bootstrap5.3-theme/styles/toolbar/toolbar.css'
 import '@syncfusion/ej2-bootstrap5.3-theme/styles/grid/grid.css'
+// Global styles and the Clarity City font, after the themes so their overrides win.
+import './assets/app.css'
 
 import { registerLicense } from '@syncfusion/ej2-base'
 import { createPinia } from 'pinia'

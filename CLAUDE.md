@@ -66,7 +66,7 @@ npm --prefix web run test -- tests/views/ResidentsView.test.ts   # one unit test
 
 `web/.env.local` (git-ignored) holds `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (the `ANON_KEY` from `npx supabase status -o env`) and the optional `VITE_SYNCFUSION_LICENSE_KEY`. Playwright needs Chromium once: `(cd web && npx playwright install chromium)`.
 
-Component tests mount with `web/tests/utils/mountWithApp.ts` and mock `@/api/*`. A missing i18n key fails the unit tests. Syncfusion theme CSS is imported per component in `web/src/main.ts` from `@syncfusion/ej2-bootstrap5.3-theme`.
+Component tests mount with `web/tests/utils/mountWithApp.ts` and mock `@/api/*`. A missing i18n key fails the unit tests. Syncfusion theme CSS is imported per component in `web/src/main.ts` from `@syncfusion/ej2-bootstrap5.3-theme`. Global styles and the bundled Clarity City font live in `web/src/assets/app.css`, imported last in `main.ts` so its `:root` overrides win.
 
 Web conventions the tests rely on: Syncfusion pickers and dropdowns are bound with `:value` and a change handler (not `v-model`); Syncfusion Dialogs stay mounted and bind `visible`, with `v-if` only on the content inside; Grid cells read only precomputed row fields; test ids use `data-testid`; dates are typed into Syncfusion inputs with `typeInto()` from `web/tests/utils/syncfusion.ts`.
 
