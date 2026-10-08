@@ -11,9 +11,12 @@ import '@syncfusion/ej2-bootstrap5.3-theme/styles/drop-down-base/drop-down-base.
 import '@syncfusion/ej2-bootstrap5.3-theme/styles/drop-down-list/drop-down-list.css'
 
 import { registerLicense } from '@syncfusion/ej2-base'
+import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import App from './App.vue'
 import { i18n, setLocale } from './i18n'
+import { router } from './router'
+import { useSessionStore } from './stores/session'
 
 async function bootstrap(): Promise<void> {
   const licenseKey = import.meta.env.VITE_SYNCFUSION_LICENSE_KEY
@@ -22,7 +25,12 @@ async function bootstrap(): Promise<void> {
   await setLocale('es-MX')
 
   const app = createApp(App)
+  const pinia = createPinia()
+  app.use(pinia)
   app.use(i18n)
+  // Starts reading the stored session (and any sign-in link in the URL) right away.
+  void useSessionStore(pinia).init()
+  app.use(router)
   app.mount('#app')
 }
 
