@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import DateField from '@/components/forms/DateField.vue'
 import { mountWithApp } from '../../utils/mountWithApp'
 import { typeInto } from '../../utils/syncfusion'
+import { TEST_TIMEZONES, useTimezone } from '../../utils/timezone'
 
 afterEach(() => {
   document.body.innerHTML = ''
@@ -11,7 +12,16 @@ function inputValue(wrapper: Awaited<ReturnType<typeof mountWithApp>>['wrapper']
   return (wrapper.find('#field').element as HTMLInputElement).value
 }
 
-describe('DateField', () => {
+// The same calendar day must come out whatever the browser's timezone is.
+describe.each(TEST_TIMEZONES)('DateField in %s', (timezone) => {
+  useTimezone(timezone)
+
+  it('runs in the zone under test', () => {
+    // 2026-01-15 is winter in the north and summer in Auckland: UTC-6 and UTC+13.
+    const expectedOffset = timezone === 'America/Mexico_City' ? 360 : -780
+    expect(new Date(2026, 0, 15, 12).getTimezoneOffset()).toBe(expectedOffset)
+  })
+
   it('shows a calendar date as dd/MM/yyyy', async () => {
     const { wrapper } = await mountWithApp(DateField, { props: { id: 'field', modelValue: '2026-10-07' } })
     expect(inputValue(wrapper)).toBe('07/10/2026')
