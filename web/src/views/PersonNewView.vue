@@ -1,18 +1,22 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, shallowRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { registerAndCheckIn } from '@/api/people'
+import { uploadPersonPhoto } from '@/api/photos'
 import PageHeader from '@/components/common/PageHeader.vue'
 import { type FieldErrors, hasErrors } from '@/components/forms/fieldErrors'
 import DuplicatePanel from '@/components/people/DuplicatePanel.vue'
 import PersonForm from '@/components/people/PersonForm.vue'
 import { emptyPerson, formToPersonInput, validatePerson } from '@/components/people/personFormModel'
+import PhotoCapture from '@/components/people/PhotoCapture.vue'
 import StayForm from '@/components/stays/StayForm.vue'
 import { emptyStay, formToStayInput, validateStay } from '@/components/stays/stayFormModel'
 import { useDuplicateCheck } from '@/composables/useDuplicateCheck'
 import { useNotify } from '@/composables/useNotify'
+import { usePendingPhotos } from '@/composables/usePendingPhotos'
 import { useShelterTime } from '@/composables/useShelterTime'
+import type { PhotoPair } from '@/lib/imageResize'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -24,6 +28,17 @@ const stay = ref(emptyStay(today()))
 const personErrors = ref<FieldErrors>({})
 const stayErrors = ref<FieldErrors>({})
 const saving = ref(false)
+const pendingPhotos = usePendingPhotos()
+const photo = shallowRef<PhotoPair | null>(null)
+const preview = ref<string | null>(null)
+
+function setPhoto(next: PhotoPair | null): void {
+  if (preview.value) URL.revokeObjectURL(preview.value)
+  photo.value = next
+  preview.value = next ? URL.createObjectURL(next.thumb) : null
+}
+
+onBeforeUnmount(() => setPhoto(null))
 const showErrorSummary = computed(() => hasErrors(personErrors.value) || hasErrors(stayErrors.value))
 
 const { candidates, checking, failed } = useDuplicateCheck(() => ({
@@ -71,6 +86,15 @@ async function save(): Promise<void> {
   // navigation (for example a lazy route chunk that does not load) cannot lead to a
   // second registration of the same person.
   notify.success('registration.saved')
+  const chosen = photo.value
+  if (chosen) {
+    try {
+      await uploadPersonPhoto(personId, chosen.full, chosen.thumb)
+    } catch {
+      // The person is registered. Their record offers "Reintentar foto" with this picture.
+      pendingPhotos.set(personId, chosen)
+    }
+  }
   try {
     await router.push({ name: 'person', params: { id: personId } })
   } catch (error) {
@@ -95,6 +119,27 @@ async function save(): Promise<void> {
             <div class="card-body">
               <h2 class="h5 card-title">{{ t('registration.staySection') }}</h2>
               <StayForm v-model="stay" :errors="stayErrors" />
+            </div>
+          </section>
+          <section class="card mb-4">
+            <div class="card-body">
+              <h2 class="h5 card-title">{{ t('photos.title') }}</h2>
+              <div v-if="preview" class="d-flex align-items-center gap-3">
+                <img
+                  :src="preview"
+                  :alt="t('photos.previewAlt')"
+                  width="96"
+                  height="96"
+                  class="rounded object-fit-cover"
+                />
+                <div>
+                  <p class="mb-2" data-testid="photo-ready">{{ t('photos.ready') }}</p>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" @click="setPhoto(null)">
+                    {{ t('photos.remove') }}
+                  </button>
+                </div>
+              </div>
+              <PhotoCapture v-else id-prefix="registration-photo" @captured="setPhoto" />
             </div>
           </section>
           <p v-if="showErrorSummary" class="text-danger" role="alert">{{ t('registration.fixErrors') }}</p>

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '@/api/errors'
 import { listOutingsForStay } from '@/api/outings'
 import { getPerson, updatePerson } from '@/api/people'
+import { getSignedPhotoUrls } from '@/api/photos'
 import { checkIn, listStaysForPerson } from '@/api/stays'
 import { todayIn } from '@/lib/shelterTime'
 import PersonView from '@/views/PersonView.vue'
@@ -104,6 +105,23 @@ describe('PersonView', () => {
     const labels = wrapper.findAll('button').map((candidate) => candidate.text())
     expect(labels).not.toContain('Editar datos')
     expect(labels).not.toContain('Nueva estancia')
+    expect(labels).not.toContain('Agregar foto')
+  })
+
+  it('offers to add a photo when the record has none', async () => {
+    const { wrapper } = await mountLoaded()
+    expect(wrapper.text()).toContain('Sin foto')
+    expect(button(wrapper, 'Agregar foto').exists()).toBe(true)
+  })
+
+  it('shows the photo of the record through a signed URL and offers to change it', async () => {
+    const path = `${uuid(1)}.jpg`
+    vi.mocked(getPerson).mockResolvedValue(makePerson({ photo_path: path }))
+    vi.mocked(getSignedPhotoUrls).mockResolvedValueOnce({ [path]: 'https://storage.test/rosa.jpg' })
+    const { wrapper } = await mountLoaded()
+    await vi.waitFor(() => expect(wrapper.find('img').attributes('src')).toBe('https://storage.test/rosa.jpg'))
+    expect(getSignedPhotoUrls).toHaveBeenCalledWith([path])
+    expect(button(wrapper, 'Cambiar foto').exists()).toBe(true)
   })
 
   it('says when the record does not exist', async () => {

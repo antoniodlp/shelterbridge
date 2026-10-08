@@ -19,6 +19,7 @@ import {
   personToForm,
   validatePerson,
 } from '@/components/people/personFormModel'
+import PersonPhoto from '@/components/people/PersonPhoto.vue'
 import StayEditDialog from '@/components/stays/StayEditDialog.vue'
 import StayForm from '@/components/stays/StayForm.vue'
 import StayHistory from '@/components/stays/StayHistory.vue'
@@ -337,6 +338,13 @@ async function reopenStay(stay: Stay): Promise<void> {
       </div>
       <div class="row g-4">
         <div class="col-lg-4">
+          <PersonPhoto
+            :person-id="person.id"
+            :photo-path="person.photo_path"
+            :name="name"
+            :readonly="merged"
+            @updated="load"
+          />
           <section class="card mb-4">
             <div class="card-body">
               <h2 class="h4" data-testid="person-name">{{ name }}</h2>

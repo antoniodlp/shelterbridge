@@ -297,6 +297,23 @@
     }
   },
   "photos": {
-    "thumbAlt": "Foto de {name}"
+    "thumbAlt": "Foto de {name}",
+    "title": "Foto",
+    "previewAlt": "Vista previa de la foto",
+    "useCamera": "Usar cámara",
+    "takePhoto": "Tomar foto",
+    "closeCamera": "Cerrar cámara",
+    "chooseFile": "Elegir archivo o tomar con el teléfono",
+    "processing": "Preparando la foto...",
+    "cameraUnavailable": "No se pudo usar la cámara. Revisa el permiso del navegador o elige un archivo.",
+    "processFailed": "No se pudo leer la imagen. Prueba con otra foto.",
+    "ready": "Foto lista. Se guardará al registrar.",
+    "remove": "Quitar foto",
+    "none": "Sin foto",
+    "add": "Agregar foto",
+    "change": "Cambiar foto",
+    "saved": "Foto guardada.",
+    "uploadFailed": "La foto no se pudo guardar. La persona sí quedó registrada.",
+    "retry": "Reintentar foto"
   }
 }
