@@ -9,10 +9,9 @@ import AppNavbar from '@/components/layout/AppNavbar.vue'
 import AppShell from '@/components/layout/AppShell.vue'
 import OfflineBanner from '@/components/layout/OfflineBanner.vue'
 import { i18n } from '@/i18n'
-import { routes } from '@/router/routes'
 import { useCatalogsStore } from '@/stores/catalogs'
-import { useSessionStore } from '@/stores/session'
-import { fakeAppUser, mountWithApp } from '../utils/mountWithApp'
+import { useSessionStore, type SessionStatus } from '@/stores/session'
+import { fakeAppUser, mountWithApp, stubbedRoutes } from '../utils/mountWithApp'
 
 vi.mock('@/api/auth')
 vi.mock('@/api/catalogs')
@@ -91,33 +90,108 @@ describe('App', () => {
     { path: '/test-blank', component: defineComponent({ render: () => h('h1', 'Página sin menú') }), meta: { layout: 'blank' as const } },
   ]
 
-  async function mountApp(path: string) {
-    const router = createRouter({ history: createMemoryHistory(), routes: [...routes, ...testRoutes] })
+  async function mountApp(path: string, status: SessionStatus = 'ready') {
+    const router = createRouter({ history: createMemoryHistory(), routes: [...stubbedRoutes, ...testRoutes] })
     await router.push(path)
     await router.isReady()
     const pinia = createTestingPinia({
       createSpy: vi.fn,
       stubActions: false,
       initialState: {
-        session: { status: 'ready', appUser: fakeAppUser('legal'), operatorName: null },
+        session: { status, appUser: status === 'ready' ? fakeAppUser('legal') : null, operatorName: null },
         catalogs: { loaded: true },
         settings: { loaded: true },
       },
     })
     const wrapper = mount(App, { attachTo: document.body, global: { plugins: [i18n, pinia, router] } })
     await flushPromises()
-    return wrapper
+    return { wrapper, router }
   }
 
   it('wraps app pages in the shell with the navbar', async () => {
-    const wrapper = await mountApp('/test-app')
+    const { wrapper } = await mountApp('/test-app')
     expect(wrapper.find('nav.navbar').exists()).toBe(true)
     expect(wrapper.get('main h1').text()).toBe('Página de prueba')
   })
 
   it('shows blank pages without the navbar', async () => {
-    const wrapper = await mountApp('/test-blank')
+    const { wrapper } = await mountApp('/test-blank')
     expect(wrapper.find('nav.navbar').exists()).toBe(false)
     expect(wrapper.get('main h1').text()).toBe('Página sin menú')
+  })
+
+  describe('when the session changes while a page is open', () => {
+    const supabaseSession = { user: { id: '00000000-0000-4000-8000-00000000a001' } } as unknown as auth.Session
+
+    it('goes to login when Supabase ends the session on an app page', async () => {
+      // For example a sign-out in another tab, or a revoked or expired refresh token.
+      let listener: ((next: auth.Session | null) => void) | undefined
+      vi.mocked(auth.onAuthChange).mockImplementation((callback) => {
+        listener = callback
+        return () => undefined
+      })
+      vi.mocked(auth.getSession).mockResolvedValue(supabaseSession)
+      vi.mocked(auth.getMyAppUser).mockResolvedValue(fakeAppUser('legal'))
+      const { router } = await mountApp('/test-app')
+      await useSessionStore().init()
+      expect(listener).toBeDefined()
+      listener?.(null)
+      await flushPromises()
+      expect(useSessionStore().status).toBe('signedOut')
+      expect(router.currentRoute.value.name).toBe('login')
+      expect(router.currentRoute.value.query.redirect).toBe('/test-app')
+    })
+
+    it('goes to pending when the account loses its access on an app page', async () => {
+      vi.mocked(auth.getSession).mockResolvedValue(supabaseSession)
+      vi.mocked(auth.getMyAppUser).mockResolvedValue(fakeAppUser('legal', { active: false }))
+      const { router } = await mountApp('/test-blank')
+      await useSessionStore().refreshAppUser()
+      await flushPromises()
+      expect(useSessionStore().status).toBe('pending')
+      expect(router.currentRoute.value.name).toBe('pending')
+    })
+
+    it.each(['/login', '/reset-password'])('leaves the public page %s to its own view', async (path) => {
+      const { router } = await mountApp(path)
+      const replace = vi.spyOn(router, 'replace')
+      const push = vi.spyOn(router, 'push')
+      const session = useSessionStore()
+      for (const status of ['signedOut', 'pending', 'ready', 'signedOut'] as const) {
+        session.status = status
+        await flushPromises()
+      }
+      expect(replace).not.toHaveBeenCalled()
+      expect(push).not.toHaveBeenCalled()
+      expect(router.currentRoute.value.path).toBe(path)
+    })
+
+    it('stays on the pending page when the account is pending', async () => {
+      const { router } = await mountApp('/pending')
+      const replace = vi.spyOn(router, 'replace')
+      useSessionStore().status = 'pending'
+      await flushPromises()
+      expect(replace).not.toHaveBeenCalled()
+      expect(router.currentRoute.value.name).toBe('pending')
+    })
+
+    it('leaves the first navigation to the route guard', async () => {
+      const { router } = await mountApp('/test-app', 'loading')
+      const replace = vi.spyOn(router, 'replace')
+      useSessionStore().status = 'signedOut'
+      await flushPromises()
+      expect(replace).not.toHaveBeenCalled()
+    })
+
+    it('navigates only once when the user signs out from the menu', async () => {
+      vi.mocked(auth.signOut).mockResolvedValue()
+      const { wrapper, router } = await mountApp('/test-app')
+      const replace = vi.spyOn(router, 'replace')
+      await wrapper.get('button.btn-outline-danger').trigger('click')
+      await flushPromises()
+      expect(router.currentRoute.value.name).toBe('login')
+      expect(replace).toHaveBeenCalledOnce()
+      expect(replace).toHaveBeenCalledWith({ name: 'login' })
+    })
   })
 })
