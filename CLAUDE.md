@@ -19,8 +19,8 @@ The spec is the source of truth for the data model, roles, RPC functions, screen
 
 ## Roadmap
 
-1. Registry and Stays (current): auth, roles, people, duplicate detection and merge, stays, outings, current residents, audit, Spanish UI.
-2. Reports.
+1. Registry and Stays: auth, roles, people, duplicate detection and merge, stays, outings, current residents, audit, Spanish UI.
+2. Reports (next).
 3. Google Sheets import of historical data.
 4. Needs and follow-up, including confidential legal and psychology notes.
 
