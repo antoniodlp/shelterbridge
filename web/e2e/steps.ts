@@ -56,8 +56,18 @@ export async function registerPerson(
     })
     await expect(page.getByText('Foto lista. Se guardará al registrar.')).toBeVisible()
   }
-  await page.getByRole('button', { name: 'Registrar e ingresar' }).click()
-  await page.waitForURL(/\/people\/[0-9a-f-]{36}$/)
+  const submit = page.getByRole('button', { name: 'Registrar e ingresar' })
+  await submit.click()
+  // The form looks for lookalikes before it registers. On a database that already holds one (an
+  // earlier run without db:reset) the first click only shows the panel: say the person is new, send again.
+  const panel = page.getByTestId('duplicate-panel')
+  const registered = page.waitForURL(/\/people\/[0-9a-f-]{36}$/)
+  await Promise.race([registered, panel.waitFor({ state: 'visible' })])
+  if (await panel.isVisible()) {
+    await panel.getByRole('button', { name: 'Es una persona nueva' }).click()
+    await submit.click()
+  }
+  await registered
   return new URL(page.url()).pathname.split('/').pop() ?? ''
 }
 

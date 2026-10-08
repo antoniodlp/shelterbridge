@@ -115,4 +115,110 @@ describe('useDuplicateCheck', () => {
     expect(check.candidates.value).toEqual([])
     scope.stop()
   })
+
+  describe('settle', () => {
+    it('asks at once instead of waiting for the debounce, and resolves with the answer', async () => {
+      const rosa = candidate(1, 'Rosa')
+      find.mockResolvedValue([rosa])
+      const { form, check, scope } = setup()
+      form.first_name = 'Rosa'
+      await nextTick()
+      await vi.advanceTimersByTimeAsync(100)
+      expect(find).not.toHaveBeenCalled()
+      await check.settle()
+      expect(find).toHaveBeenCalledTimes(1)
+      expect(check.candidates.value).toEqual([rosa])
+      expect(check.checking.value).toBe(false)
+      // The flushed debounce does not fire a second request later.
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(find).toHaveBeenCalledTimes(1)
+      scope.stop()
+    })
+
+    it('waits for a request that is already in flight', async () => {
+      const rosa = candidate(1, 'Rosa')
+      let answer: (value: DuplicateCandidate[]) => void = () => {}
+      find.mockImplementation(
+        () =>
+          new Promise<DuplicateCandidate[]>((resolve) => {
+            answer = resolve
+          }),
+      )
+      const { form, check, scope } = setup()
+      form.first_name = 'Rosa'
+      await nextTick()
+      await vi.advanceTimersByTimeAsync(400)
+      expect(find).toHaveBeenCalledTimes(1)
+      let settled = false
+      const waiting = check.settle().then(() => {
+        settled = true
+      })
+      await vi.advanceTimersByTimeAsync(0)
+      expect(settled).toBe(false)
+      expect(find).toHaveBeenCalledTimes(1)
+      answer([rosa])
+      await waiting
+      expect(check.candidates.value).toEqual([rosa])
+      scope.stop()
+    })
+
+    it('resolves at once when there is nothing to ask', async () => {
+      const { check, scope } = setup()
+      await check.settle()
+      expect(find).not.toHaveBeenCalled()
+      expect(check.candidates.value).toEqual([])
+      scope.stop()
+    })
+
+    it('resolves without throwing when the lookup fails', async () => {
+      find.mockRejectedValue(new Error('offline'))
+      const { form, check, scope } = setup()
+      form.first_name = 'Rosa'
+      await nextTick()
+      await expect(check.settle()).resolves.toBeUndefined()
+      expect(check.failed.value).toBe(true)
+      expect(check.candidates.value).toEqual([])
+      scope.stop()
+    })
+
+    it('ends with the answer for the latest input when an earlier request is still open', async () => {
+      const first = candidate(1, 'Rosa')
+      const second = candidate(2, 'Tomás')
+      let resolveFirst: (value: DuplicateCandidate[]) => void = () => {}
+      find.mockImplementationOnce(
+        () =>
+          new Promise<DuplicateCandidate[]>((resolve) => {
+            resolveFirst = resolve
+          }),
+      )
+      find.mockResolvedValueOnce([second])
+      const { form, check, scope } = setup()
+      form.first_name = 'Rosa'
+      await nextTick()
+      await vi.advanceTimersByTimeAsync(400)
+      form.first_name = 'Tomás'
+      await nextTick()
+      await check.settle()
+      expect(check.candidates.value).toEqual([second])
+      resolveFirst([first])
+      await vi.advanceTimersByTimeAsync(0)
+      expect(check.candidates.value).toEqual([second])
+      scope.stop()
+    })
+
+    it('clears the suggestions at once when the name has become too short', async () => {
+      find.mockResolvedValue([candidate(1, 'Rosa')])
+      const { form, check, scope } = setup()
+      form.first_name = 'Rosa'
+      await nextTick()
+      await check.settle()
+      expect(check.candidates.value).toHaveLength(1)
+      form.first_name = 'R'
+      await nextTick()
+      await check.settle()
+      expect(check.candidates.value).toEqual([])
+      expect(find).toHaveBeenCalledTimes(1)
+      scope.stop()
+    })
+  })
 })

@@ -429,12 +429,12 @@ Route guards use the role from the Pinia session store. RLS is the real enforcem
 ### 9.2 Registration with duplicate detection
 
 1. While first name, last name, birth date or country change, the UI waits 400 ms after the last keystroke and then calls `findPossibleDuplicates`.
-2. A side panel lists up to 5 candidates, each with thumbnail, name, age, country and last stay.
+2. A panel lists up to 5 candidates, each with thumbnail, name, age, country and last stay. On wide screens it is a side column. On phones it sits right after the person fields, so it is seen while the name is typed.
    - **"Es esta persona"** ("it's this person") opens the existing person and starts the check-in flow there.
    - **"Es una persona nueva"** ("it's a new person") continues registration.
 3. The form collects person fields and the first stay's fields (entry date defaulting to today, bed, case type, phone status, notes).
    - If the computed age is under 18, a **carer** picker appears that searches current residents.
-4. On save, `registerAndCheckIn` runs as one transaction.
+4. Enter in a field does not save; only the "Registrar e ingresar" button does. On save, the UI first finishes the pending duplicate lookup (it does not wait for the 400 ms). If that lookup shows candidates the person had not seen yet, nothing is saved: the panel is brought into view and the person decides ("Es esta persona", "Es una persona nueva", or save again). A failed lookup does not block saving. Then `registerAndCheckIn` runs as one transaction.
 5. **Photo:** from the webcam (`getUserMedia`) on desktop, or a file or camera input (`<input type="file" accept="image/*" capture>`) on phones. The UI then:
    - resizes in the browser to the full image and the thumbnail;
    - uploads both;

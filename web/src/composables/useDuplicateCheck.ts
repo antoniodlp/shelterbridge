@@ -12,13 +12,19 @@ export interface DuplicateQuery {
   country_code: string | null
 }
 
-/** Looks for likely duplicates 400 ms after the last change. Only the latest answer is kept. */
+/**
+ * Looks for likely duplicates 400 ms after the last change. Only the latest answer is kept.
+ * `settle()` skips the wait: it resolves when the candidates match what is typed now.
+ */
 export function useDuplicateCheck(source: () => DuplicateQuery) {
   const candidates = ref<DuplicateCandidate[]>([])
   const checking = ref(false)
   const failed = ref(false)
   let timer: ReturnType<typeof setTimeout> | undefined
   let latest = 0
+  // The query that is waiting for the debounce, and the request that is in flight.
+  let waiting: DuplicateQuery | null = null
+  let running: Promise<void> | null = null
 
   async function check(query: DuplicateQuery): Promise<void> {
     const request = ++latest
@@ -50,11 +56,28 @@ export function useDuplicateCheck(source: () => DuplicateQuery) {
     }
   }
 
+  function start(query: DuplicateQuery): void {
+    clearTimeout(timer)
+    waiting = null
+    // check() never rejects: a failed lookup only sets `failed`.
+    const request: Promise<void> = check(query).finally(() => {
+      if (running === request) running = null
+    })
+    running = request
+  }
+
   watch(source, (query) => {
     clearTimeout(timer)
-    timer = setTimeout(() => void check(query), DUPLICATE_DEBOUNCE_MS)
+    waiting = query
+    timer = setTimeout(() => start(query), DUPLICATE_DEBOUNCE_MS)
   })
   onScopeDispose(() => clearTimeout(timer))
 
-  return { candidates, checking, failed }
+  /** Runs the lookup now if one is waiting for the debounce, then waits for the one in flight. */
+  async function settle(): Promise<void> {
+    if (waiting) start(waiting)
+    while (running) await running
+  }
+
+  return { candidates, checking, failed, settle }
 }

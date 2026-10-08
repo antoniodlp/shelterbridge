@@ -1,4 +1,5 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
 import { registerAndCheckIn } from '@/api/people'
 import { uploadPersonPhoto } from '@/api/photos'
 import { usePendingPhotos } from '@/composables/usePendingPhotos'
@@ -66,6 +67,51 @@ async function registerWithPhoto() {
 }
 
 describe('PersonNewView photo', () => {
+  it('cannot be saved while the chosen photo is still being prepared', async () => {
+    let finish: (value: typeof pair) => void = () => {}
+    vi.mocked(makePhotoPair).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve
+        }),
+    )
+    vi.mocked(uploadPersonPhoto).mockResolvedValue(`${uuid(1)}.jpg`)
+    const { wrapper, router } = await mountWithApp(PersonNewView, { initialRoute: '/people/new' })
+    const input = wrapper.find('#registration-photo-file')
+    Object.defineProperty(input.element, 'files', {
+      value: [new File(['raw'], 'foto.png', { type: 'image/png' })],
+      configurable: true,
+    })
+    await input.trigger('change')
+    await wrapper.find('#person-first-name').setValue('Rosa Elena')
+    const submit = wrapper.find('button[type="submit"]')
+    expect(submit.attributes('disabled')).toBeDefined()
+    await wrapper.find('form.registration-form').trigger('submit')
+    await flushPromises()
+    expect(registerAndCheckIn).not.toHaveBeenCalled()
+
+    finish(pair)
+    await vi.waitFor(() => expect(wrapper.find('[data-testid="photo-ready"]').exists()).toBe(true))
+    expect(wrapper.find('button[type="submit"]').attributes('disabled')).toBeUndefined()
+    await wrapper.find('form.registration-form').trigger('submit')
+    await vi.waitFor(() => expect(router.currentRoute.value.name).toBe('person'))
+    expect(registerAndCheckIn).toHaveBeenCalledTimes(1)
+    expect(uploadPersonPhoto).toHaveBeenCalledWith(uuid(1), pair.full, pair.thumb)
+  })
+
+  it('can be saved again after the chosen image could not be read', async () => {
+    vi.mocked(makePhotoPair).mockRejectedValue(new Error('decode'))
+    const { wrapper } = await mountWithApp(PersonNewView, { initialRoute: '/people/new' })
+    const input = wrapper.find('#registration-photo-file')
+    Object.defineProperty(input.element, 'files', {
+      value: [new File(['raw'], 'roto.heic', { type: 'image/heic' })],
+      configurable: true,
+    })
+    await input.trigger('change')
+    await vi.waitFor(() => expect(wrapper.text()).toContain('No se pudo leer la imagen.'))
+    expect(wrapper.find('button[type="submit"]').attributes('disabled')).toBeUndefined()
+  })
+
   it('uploads the photo after registering, then opens the record', async () => {
     vi.mocked(uploadPersonPhoto).mockResolvedValue(`${uuid(1)}.jpg`)
     await registerWithPhoto()
@@ -78,6 +124,7 @@ describe('PersonNewView photo', () => {
     const { router } = await registerWithPhoto()
     expect(router.currentRoute.value.params.id).toBe(uuid(1))
     expect(usePendingPhotos().get(uuid(1))).toEqual(pair)
+    expect(usePendingPhotos().isAfterRegistration(uuid(1))).toBe(true)
     // The person is registered, so a failed photo is not reported as a failed registration.
     expect(notify.error).not.toHaveBeenCalled()
   })

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { DuplicateCandidate } from '@/api/people'
 import PersonThumb from '@/components/people/PersonThumb.vue'
@@ -16,6 +16,17 @@ const { t } = useI18n()
 const { formatDate, today } = useShelterTime()
 const catalogs = useCatalogsStore()
 const thumbs = useThumbnails()
+const root = ref<HTMLElement | null>(null)
+const heading = ref<HTMLElement | null>(null)
+
+/** Brings the panel on screen and moves focus to its heading, so a screen reader announces it too. */
+function reveal(): void {
+  // scrollIntoView is missing in some test environments.
+  root.value?.scrollIntoView?.({ block: 'center' })
+  heading.value?.focus({ preventScroll: true })
+}
+
+defineExpose({ reveal })
 
 watch(
   () => props.candidates,
@@ -41,9 +52,9 @@ function stayLabel(candidate: DuplicateCandidate): string {
 </script>
 
 <template>
-  <section class="card border-warning" aria-live="polite" data-testid="duplicate-panel">
+  <section ref="root" class="card border-warning" aria-live="polite" data-testid="duplicate-panel">
     <div class="card-body">
-      <h2 class="h5 card-title">{{ t('registration.duplicates.title') }}</h2>
+      <h2 ref="heading" class="h5 card-title" tabindex="-1">{{ t('registration.duplicates.title') }}</h2>
       <p class="small text-body-secondary">{{ t('registration.duplicates.intro') }}</p>
       <p v-if="checking" class="small">{{ t('registration.duplicates.checking') }}</p>
       <p v-if="failed" class="small text-danger">{{ t('registration.duplicates.failed') }}</p>
