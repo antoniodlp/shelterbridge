@@ -332,5 +332,40 @@
     "staying": "En el albergue",
     "lastStay": "{from} a {to}",
     "noStays": "Sin estancias"
+  },
+  "admin": {
+    "users": {
+      "intro": "Solo las personas invitadas aquí pueden entrar a ShelterBridge.",
+      "invite": {
+        "title": "Invitar a una persona",
+        "email": "Correo electrónico",
+        "displayName": "Nombre",
+        "role": "Rol",
+        "submit": "Invitar",
+        "done": "Invitación guardada. Ya puede crear su cuenta o entrar con Google."
+      },
+      "columns": {
+        "name": "Nombre",
+        "email": "Correo",
+        "role": "Rol",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "roles": {
+        "admin": "Administración",
+        "legal": "Legal",
+        "psychology": "Psicología",
+        "volunteer": "Voluntariado"
+      },
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "pending": "Aún no entra",
+      "self": "Tu cuenta",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "deactivateTitle": "Desactivar usuario",
+      "deactivateMessage": "{name} ya no podrá ver ni cambiar datos. ¿Continuar?",
+      "updated": "Usuario actualizado."
+    }
   }
 }
