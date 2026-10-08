@@ -3,8 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '@/api/errors'
 import { listOutingsForStay } from '@/api/outings'
 import { getPerson, updatePerson } from '@/api/people'
-import { getSignedPhotoUrls } from '@/api/photos'
+import { getSignedPhotoUrls, uploadPersonPhoto } from '@/api/photos'
 import { checkIn, listStaysForPerson } from '@/api/stays'
+import PhotoCapture from '@/components/people/PhotoCapture.vue'
 import { usePendingPhotos } from '@/composables/usePendingPhotos'
 import { todayIn } from '@/lib/shelterTime'
 import PersonView from '@/views/PersonView.vue'
@@ -36,6 +37,10 @@ vi.mock('@/api/photos', () => ({
 }))
 
 const tz = 'America/Mexico_City'
+const photoPair = {
+  full: new Blob(['full'], { type: 'image/jpeg' }),
+  thumb: new Blob(['thumb'], { type: 'image/jpeg' }),
+}
 const person = makePerson({ id: uuid(1) })
 const openStay = makeStay({ id: uuid(101), entry_date: '2026-10-03', bed: 'A1' })
 const pastStay = makeStay({
@@ -148,15 +153,70 @@ describe('PersonView', () => {
   })
 
   it('does not offer the photo retry while the details form is open', async () => {
-    usePendingPhotos().set(uuid(1), {
-      full: new Blob(['full'], { type: 'image/jpeg' }),
-      thumb: new Blob(['thumb'], { type: 'image/jpeg' }),
-    })
+    usePendingPhotos().set(uuid(1), photoPair)
     const { wrapper } = await mountLoaded()
     expect(button(wrapper, 'Reintentar foto').exists()).toBe(true)
     await button(wrapper, 'Editar datos').trigger('click')
     expect(wrapper.findAll('button').map((candidate) => candidate.text())).not.toContain('Reintentar foto')
     expect(wrapper.find('[data-testid="photo-pending"]').exists()).toBe(true)
+  })
+
+  // The upload also bumps updated_at, so a details form opened during it would fail to save.
+  it('blocks "Editar datos" while a photo is uploading', async () => {
+    usePendingPhotos().set(uuid(1), photoPair)
+    let finish: (path: string) => void = () => {}
+    vi.mocked(uploadPersonPhoto).mockReturnValueOnce(
+      new Promise<string>((resolve) => {
+        finish = resolve
+      }),
+    )
+    const { wrapper } = await mountLoaded()
+    expect(button(wrapper, 'Editar datos').attributes('disabled')).toBeUndefined()
+    await button(wrapper, 'Reintentar foto').trigger('click')
+    await vi.waitFor(() => expect(button(wrapper, 'Editar datos').attributes('disabled')).toBeDefined())
+    await button(wrapper, 'Editar datos').trigger('click')
+    expect(wrapper.find('form.person-edit-form').exists()).toBe(false)
+
+    finish(`${uuid(1)}.jpg`)
+    await vi.waitFor(() => expect(button(wrapper, 'Editar datos').attributes('disabled')).toBeUndefined())
+    await button(wrapper, 'Editar datos').trigger('click')
+    expect(wrapper.find('form.person-edit-form').exists()).toBe(true)
+  })
+
+  it('keeps "Editar datos" blocked until the record has reloaded after a photo upload', async () => {
+    usePendingPhotos().set(uuid(1), photoPair)
+    vi.mocked(uploadPersonPhoto).mockResolvedValueOnce(`${uuid(1)}.jpg`)
+    const { wrapper } = await mountLoaded()
+    let reloaded: (value: typeof person) => void = () => {}
+    vi.mocked(getPerson).mockReturnValueOnce(
+      new Promise<typeof person>((resolve) => {
+        reloaded = resolve
+      }),
+    )
+    await button(wrapper, 'Reintentar foto').trigger('click')
+    await vi.waitFor(() => expect(getPerson).toHaveBeenCalledTimes(2))
+    // The photo is saved, but the version this screen holds is still the one from before it.
+    expect(button(wrapper, 'Editar datos').attributes('disabled')).toBeDefined()
+
+    reloaded(makePerson({ updated_at: '2026-10-07T19:00:00+00:00' }))
+    await vi.waitFor(() => expect(button(wrapper, 'Editar datos').attributes('disabled')).toBeUndefined())
+  })
+
+  it('allows "Editar datos" again when a photo upload fails', async () => {
+    let fail: (error: Error) => void = () => {}
+    vi.mocked(uploadPersonPhoto).mockReturnValueOnce(
+      new Promise<string>((_resolve, reject) => {
+        fail = reject
+      }),
+    )
+    const { wrapper } = await mountLoaded()
+    await button(wrapper, 'Agregar foto').trigger('click')
+    wrapper.findComponent(PhotoCapture).vm.$emit('captured', photoPair)
+    await vi.waitFor(() => expect(button(wrapper, 'Editar datos').attributes('disabled')).toBeDefined())
+
+    fail(new Error('offline'))
+    await vi.waitFor(() => expect(button(wrapper, 'Editar datos').attributes('disabled')).toBeUndefined())
+    expect(notify.error).toHaveBeenCalledTimes(1)
   })
 
   it('says when the record does not exist', async () => {

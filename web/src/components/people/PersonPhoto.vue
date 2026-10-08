@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getSignedPhotoUrls, uploadPersonPhoto } from '@/api/photos'
 import PhotoCapture from '@/components/people/PhotoCapture.vue'
@@ -11,7 +11,9 @@ const props = withDefaults(
   defineProps<{ personId: string; photoPath: string | null; name: string; readonly?: boolean }>(),
   { readonly: false },
 )
-const emit = defineEmits<{ updated: [] }>()
+// uploading tells the record whether a photo write is running: it bumps people.updated_at, so the
+// record must not open its details form meanwhile.
+const emit = defineEmits<{ updated: []; uploading: [active: boolean] }>()
 
 const { t } = useI18n()
 const notify = useNotify()
@@ -24,6 +26,16 @@ const url = computed(() => (signed.value && signed.value.path === props.photoPat
 const capturing = ref(false)
 const uploading = ref(false)
 const pending = computed(() => pendingPhotos.get(props.personId))
+
+function setUploading(active: boolean): void {
+  uploading.value = active
+  emit('uploading', active)
+}
+
+// Going away mid-upload (another record opens): the record must not stay blocked by this write.
+onBeforeUnmount(() => {
+  if (uploading.value) emit('uploading', false)
+})
 
 /**
  * Signs the path again. A failure leaves the picture that is already shown: the photo
@@ -44,7 +56,7 @@ watch(() => props.photoPath, refresh, { immediate: true })
 async function upload(photo: PhotoPair): Promise<void> {
   if (uploading.value) return
   const id = props.personId
-  uploading.value = true
+  setUploading(true)
   let path: string
   try {
     path = await uploadPersonPhoto(id, photo.full, photo.thumb)
@@ -53,7 +65,7 @@ async function upload(photo: PhotoPair): Promise<void> {
     notify.error(error)
     return
   } finally {
-    uploading.value = false
+    setUploading(false)
   }
   // The photo is saved. Nothing below may put it back in the retry store or report an upload
   // error. The path is always the same, so the record's photoPath prop does not change after

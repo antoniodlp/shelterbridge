@@ -114,6 +114,44 @@ describe('PersonPhoto', () => {
     expect(wrapper.find('img').attributes('src')).toBe('https://storage.test/rosa.jpg?token=old')
   })
 
+  describe('upload state', () => {
+    async function startUpload(wrapper: Awaited<ReturnType<typeof mountPhoto>>['wrapper']) {
+      await buttonLabeled(wrapper, 'Agregar foto').trigger('click')
+      wrapper.findComponent(PhotoCapture).vm.$emit('captured', pair)
+      await vi.waitFor(() => expect(wrapper.emitted('uploading')).toEqual([[true]]))
+    }
+
+    it('tells the record while an upload runs and when it is done', async () => {
+      let finish: (value: string) => void = () => {}
+      vi.mocked(uploadPersonPhoto).mockReturnValueOnce(
+        new Promise<string>((resolve) => {
+          finish = resolve
+        }),
+      )
+      const { wrapper } = await mountPhoto()
+      await startUpload(wrapper)
+      finish(path)
+      await vi.waitFor(() => expect(wrapper.emitted('uploading')).toEqual([[true], [false]]))
+    })
+
+    it('tells the record when an upload fails', async () => {
+      vi.mocked(uploadPersonPhoto).mockRejectedValueOnce(new Error('offline'))
+      const { wrapper } = await mountPhoto()
+      await startUpload(wrapper)
+      await vi.waitFor(() => expect(wrapper.emitted('uploading')).toEqual([[true], [false]]))
+    })
+
+    it('tells the record when it goes away during an upload', async () => {
+      vi.mocked(uploadPersonPhoto).mockReturnValueOnce(new Promise<string>(() => {}))
+      // A wrapper forgets its recorded events when it is unmounted, so a listener records them here.
+      const onUploading = vi.fn()
+      const { wrapper } = await mountPhoto({ onUploading })
+      await startUpload(wrapper)
+      wrapper.unmount()
+      expect(onUploading.mock.calls).toEqual([[true], [false]])
+    })
+  })
+
   it('offers the retry for a photo that failed during registration', async () => {
     usePendingPhotos().set(uuid(1), pair)
     const { wrapper } = await mountPhoto()

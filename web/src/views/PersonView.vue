@@ -68,6 +68,12 @@ const editingOuting = ref<Outing | null>(null)
 // One correction is written at a time: a save, a reopen or a delete.
 const savingCorrection = ref(false)
 
+// A photo write bumps people.updated_at. The details form captures that version when it opens, so
+// it stays closed while a photo is being written and while the record reloads afterwards.
+const photoUploading = ref(false)
+const photoReloading = ref(false)
+const photoBusy = computed(() => photoUploading.value || photoReloading.value)
+
 // Only the newest stay, only while none is open, and only if it was checked out today (by mistake).
 const reopenableId = computed(() => {
   if (merged.value || openStay.value) return null
@@ -137,8 +143,17 @@ async function handleSaveError(error: unknown, discard: () => void): Promise<voi
   await load()
 }
 
+async function reloadAfterPhoto(): Promise<void> {
+  photoReloading.value = true
+  try {
+    await load()
+  } finally {
+    photoReloading.value = false
+  }
+}
+
 function startEdit(): void {
-  if (!person.value) return
+  if (!person.value || photoBusy.value) return
   personForm.value = personToForm(person.value)
   personVersion.value = person.value.updated_at
   personErrors.value = {}
@@ -344,7 +359,8 @@ async function reopenStay(stay: Stay): Promise<void> {
             :photo-path="person.photo_path"
             :name="name"
             :readonly="merged || !!personForm"
-            @updated="load"
+            @updated="reloadAfterPhoto"
+            @uploading="photoUploading = $event"
           />
           <section class="card mb-4">
             <div class="card-body">
@@ -367,6 +383,7 @@ async function reopenStay(stay: Stay): Promise<void> {
                   v-if="!personForm && !merged"
                   type="button"
                   class="btn btn-sm btn-outline-primary"
+                  :disabled="photoBusy"
                   @click="startEdit"
                 >
                   {{ t('person.edit') }}
