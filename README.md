@@ -69,6 +69,34 @@ npm run db:test
 
 For local testing there are four made-up users, all with the password `shelterbridge-dev`: `admin@shelterbridge.test`, `legal@shelterbridge.test`, `psychology@shelterbridge.test` and `volunteer@shelterbridge.test`.
 
+## Google sign-in for local development
+
+Email and password sign-in works without this. Locally, Google sign-in stays off until you add your own Google OAuth client:
+
+1. In the [Google Cloud console](https://console.cloud.google.com/), create or pick a project and open **Google Auth Platform**.
+2. Under **Branding**, set an app name and a support email. Under **Audience**, keep the app in testing and add your Google account as a test user. The default `openid`, `email` and `profile` scopes are enough.
+3. Under **Clients**, create a client of type **Web application** with:
+   - Authorized JavaScript origin: `http://localhost:5173`
+   - Authorized redirect URI: `http://127.0.0.1:54321/auth/v1/callback`
+4. Create `supabase/.env.local` (it is git-ignored) with the client ID and secret:
+
+   ```
+   SUPABASE_AUTH_EXTERNAL_GOOGLE_ENABLED=true
+   SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=<client id>
+   SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=<client secret>
+   ```
+
+5. Restart Supabase: `npm run db:stop`, then `npm run db:start`.
+6. Invite your Google email, because sign-in is by invitation only. In Supabase Studio (http://127.0.0.1:54323), open the SQL editor and run the line below with your own email and name. `npm run db:reset` removes the invitation, so run it again after a reset.
+
+   ```sql
+   insert into public.app_users (email, role, display_name) values ('your.name@gmail.com', 'admin', 'Your Name');
+   ```
+
+Without an invitation, Google sends you back to the login page with a message asking you to request access.
+
+Staging and production each need their own Google client, with that Supabase project's callback URL (`https://<project-ref>.supabase.co/auth/v1/callback`) and the app's address as the JavaScript origin. Set the client ID and secret in the Supabase dashboard under Authentication.
+
 ## Privacy
 
 This app holds personal data about people in vulnerable situations. Never put real personal data in the repository, seed files, test fixtures, screenshots or issues. Always use made-up data.
