@@ -10,10 +10,19 @@ function isOAuthErrorReturn(to: RouteLocationNormalized): boolean {
   return typeof to.query.error === 'string' || /(^#|&)error=/.test(to.hash)
 }
 
+// Google sign-in, email confirmation and the recovery link return with the tokens in the hash.
+function hasAuthTokens(to: RouteLocationNormalized): boolean {
+  return /(^#|&)(access_token|refresh_token)=/.test(to.hash)
+}
+
 // UX only: Postgres RLS is the real authorization.
 export async function authGuard(to: RouteLocationNormalized): Promise<true | RouteLocationRaw> {
   const session = useSessionStore()
   await session.init()
+
+  // init() has read the tokens. The first navigation would write them back to the address
+  // bar (and into ?redirect=), so continue without them.
+  if (hasAuthTokens(to)) return { path: to.path, query: to.query, hash: '', replace: true }
 
   if (to.meta.public) {
     // The recovery link signs the user in, so reset-password stays reachable.

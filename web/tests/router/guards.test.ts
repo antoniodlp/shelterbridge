@@ -104,6 +104,49 @@ describe('authGuard', () => {
     expect((await land(setup('ready', 'admin'), '/')).name).toBe('residents')
     expect((await land(setup('ready', 'admin'), '/no/such/page')).name).toBe('residents')
   })
+
+  // Google sign-in, email confirmation and the recovery link come back with the tokens in
+  // the hash. supabase-js reads them during init(); the router must not write them back.
+  describe('with sign-in tokens in the URL', () => {
+    const tokens = '#access_token=fake-access&expires_in=3600&refresh_token=fake-refresh&token_type=bearer'
+
+    it('drops them from an app page and keeps the path and query', async () => {
+      const route = await land(setup('ready', 'admin'), `/people/search?view=list${tokens}`)
+      expect(route.name).toBe('people-search')
+      expect(route.fullPath).toBe('/people/search?view=list')
+    })
+
+    it('drops them from the password reset page', async () => {
+      const route = await land(setup('ready', 'legal'), `/reset-password${tokens}&type=recovery`)
+      expect(route.name).toBe('reset-password')
+      expect(route.fullPath).toBe('/reset-password')
+    })
+
+    it('keeps them out of the shift page redirect', async () => {
+      const route = await land(setup('ready', 'volunteer'), `/residents${tokens}`)
+      expect(route.name).toBe('shift')
+      expect(route.query.redirect).toBe('/residents')
+      expect(route.fullPath).not.toContain('token')
+    })
+
+    it('keeps them out of the login redirect', async () => {
+      const route = await land(setup('signedOut'), `/residents${tokens}`)
+      expect(route.name).toBe('login')
+      expect(route.query.redirect).toBe('/residents')
+      expect(route.fullPath).not.toContain('token')
+    })
+
+    it('still sends a failed Google sign-in in the hash to login with an error flag', async () => {
+      const route = await land(setup('signedOut'), '/residents#error=access_denied&error_description=Not+invited')
+      expect(route.name).toBe('login')
+      expect(route.query).toEqual({ error: 'oauth' })
+    })
+
+    it('leaves a hash without tokens alone', async () => {
+      const route = await land(setup('ready', 'admin'), '/people/search#results')
+      expect(route.fullPath).toBe('/people/search#results')
+    })
+  })
 })
 
 describe('safeRedirect', () => {
