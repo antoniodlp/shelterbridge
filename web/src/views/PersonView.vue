@@ -3,11 +3,13 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { isApiError } from '@/api/errors'
-import { listOutingsForStay } from '@/api/outings'
+import { deleteOuting, listOutingsForStay, updateOuting } from '@/api/outings'
 import { getPerson, updatePerson } from '@/api/people'
-import { checkIn, listStaysForPerson } from '@/api/stays'
+import { checkIn, deleteStay, listStaysForPerson, type StayPatch, updateStay } from '@/api/stays'
 import PageHeader from '@/components/common/PageHeader.vue'
 import { type FieldErrors, hasErrors } from '@/components/forms/fieldErrors'
+import OutingEditDialog from '@/components/outings/OutingEditDialog.vue'
+import type { OutingPatch } from '@/components/outings/outingFormModel'
 import OutingList from '@/components/outings/OutingList.vue'
 import PersonDetails from '@/components/people/PersonDetails.vue'
 import PersonForm from '@/components/people/PersonForm.vue'
@@ -17,13 +19,15 @@ import {
   personToForm,
   validatePerson,
 } from '@/components/people/personFormModel'
+import StayEditDialog from '@/components/stays/StayEditDialog.vue'
 import StayForm from '@/components/stays/StayForm.vue'
 import StayHistory from '@/components/stays/StayHistory.vue'
 import { emptyStay, formToStayInput, type StayFormValue, validateStay } from '@/components/stays/stayFormModel'
-import { useConfirm } from '@/composables/useConfirm'
+import { type ConfirmOptions, useConfirm } from '@/composables/useConfirm'
 import { useNotify } from '@/composables/useNotify'
 import { useShelterTime } from '@/composables/useShelterTime'
 import { fullName } from '@/lib/people'
+import { useSessionStore } from '@/stores/session'
 import type { Outing, Person, Stay } from '@/types/domain'
 
 const route = useRoute()
@@ -32,6 +36,7 @@ const { t } = useI18n()
 const notify = useNotify()
 const { confirm } = useConfirm()
 const { formatDate, today } = useShelterTime()
+const session = useSessionStore()
 
 const personId = computed(() => String(route.params.id))
 const person = ref<Person | null>(null)
@@ -56,6 +61,18 @@ const stayForm = ref<StayFormValue | null>(null)
 const stayErrors = ref<FieldErrors>({})
 const savingStay = ref(false)
 const overlapHint = ref(false)
+
+const editingStay = ref<Stay | null>(null)
+const editingOuting = ref<Outing | null>(null)
+// One correction is written at a time: a save, a reopen or a delete.
+const savingCorrection = ref(false)
+
+// Only the newest stay, only while none is open, and only if it was checked out today (by mistake).
+const reopenableId = computed(() => {
+  if (merged.value || openStay.value) return null
+  const newest = stays.value[0]
+  return newest && newest.exit_date === today() ? newest.id : null
+})
 
 async function load(): Promise<void> {
   const id = personId.value
@@ -85,12 +102,18 @@ async function load(): Promise<void> {
 
 watch(
   personId,
-  async () => {
+  async (id) => {
     person.value = null
+    notFound.value = false
     personForm.value = null
     stayForm.value = null
+    editingStay.value = null
+    editingOuting.value = null
     overlapHint.value = false
     await load()
+    // The route moved on while this record loaded. The newer run of this watcher owns the screen,
+    // and acting on its record here could reset a form the user is already filling in.
+    if (id !== personId.value) return
     if (route.query.checkIn === '1' && person.value && !openStay.value && !merged.value) startCheckIn()
   },
   { immediate: true },
@@ -187,6 +210,117 @@ async function saveCheckIn(): Promise<void> {
     }
   }
 }
+
+async function saveStay(patch: StayPatch): Promise<void> {
+  const stay = editingStay.value
+  if (!stay || savingCorrection.value) return
+  savingCorrection.value = true
+  try {
+    await updateStay(stay.id, stay.updated_at, patch)
+  } catch (error) {
+    await handleSaveError(error, () => {
+      editingStay.value = null
+    })
+    return
+  } finally {
+    savingCorrection.value = false
+  }
+  // The change is saved. Close the dialog first, and keep what comes next out of the error
+  // handling above: a failure after the write must not be reported as a failed save.
+  editingStay.value = null
+  notify.success('stays.edit.saved')
+  await load()
+}
+
+async function saveOuting(patch: OutingPatch): Promise<void> {
+  const outing = editingOuting.value
+  if (!outing || savingCorrection.value) return
+  savingCorrection.value = true
+  try {
+    await updateOuting(outing.id, outing.updated_at, patch)
+  } catch (error) {
+    await handleSaveError(error, () => {
+      editingOuting.value = null
+    })
+    return
+  } finally {
+    savingCorrection.value = false
+  }
+  editingOuting.value = null
+  notify.success('outings.edit.saved')
+  await load()
+}
+
+/**
+ * Asks first, then writes one correction that needs no form. The record is reloaded afterwards,
+ * also after a failure, so the screen shows what is really there. Returns whether it was written.
+ */
+async function confirmAndWrite(
+  question: ConfirmOptions,
+  write: () => Promise<unknown>,
+  doneKey: string,
+): Promise<boolean> {
+  if (savingCorrection.value) return false
+  const approved = await confirm(question)
+  // A second click can pass the question while the first one is already writing.
+  if (!approved || savingCorrection.value) return false
+  savingCorrection.value = true
+  try {
+    await write()
+  } catch (error) {
+    notify.error(error)
+    await load()
+    return false
+  } finally {
+    savingCorrection.value = false
+  }
+  notify.success(doneKey)
+  await load()
+  return true
+}
+
+function removeStay(stay: Stay): Promise<boolean> {
+  return confirmAndWrite(
+    {
+      titleKey: 'stays.edit.deleteTitle',
+      messageKey: 'stays.edit.deleteMessage',
+      confirmKey: 'stays.edit.deleteConfirm',
+      danger: true,
+    },
+    () => deleteStay(stay.id),
+    'stays.edit.deleted',
+  )
+}
+
+function removeOuting(outing: Outing): Promise<boolean> {
+  return confirmAndWrite(
+    {
+      titleKey: 'outings.edit.deleteTitle',
+      messageKey: 'outings.edit.deleteMessage',
+      confirmKey: 'outings.edit.deleteConfirm',
+      danger: true,
+    },
+    () => deleteOuting(outing.id),
+    'outings.edit.deleted',
+  )
+}
+
+async function reopenStay(stay: Stay): Promise<void> {
+  const reopened = await confirmAndWrite(
+    {
+      titleKey: 'stays.reopen.title',
+      messageKey: 'stays.reopen.message',
+      confirmKey: 'stays.reopen.confirm',
+    },
+    () => updateStay(stay.id, stay.updated_at, { exit_date: null }),
+    'stays.reopen.done',
+  )
+  if (reopened) {
+    // The person is staying again, so a check-in form left open on this page no longer applies.
+    stayForm.value = null
+    overlapHint.value = false
+  }
+}
 </script>
 
 <template>
@@ -280,18 +414,40 @@ async function saveCheckIn(): Promise<void> {
           <section v-if="openStay" class="card mb-4">
             <div class="card-body">
               <h2 class="h5">{{ t('outings.list.title') }}</h2>
-              <OutingList :outings="outings" />
+              <OutingList
+                :outings="outings"
+                :can-edit="!merged"
+                :can-delete="session.isAdmin"
+                @edit="editingOuting = $event"
+                @remove="removeOuting"
+              />
             </div>
           </section>
 
           <section class="card mb-4">
             <div class="card-body">
               <h2 class="h5">{{ t('stays.history.title') }}</h2>
-              <StayHistory :stays="stays" />
+              <StayHistory
+                :stays="stays"
+                :can-edit="!merged"
+                :can-delete="session.isAdmin"
+                :reopenable-id="reopenableId"
+                @edit="editingStay = $event"
+                @remove="removeStay"
+                @reopen="reopenStay"
+              />
             </div>
           </section>
         </div>
       </div>
     </template>
+    <!-- Outside the v-if chain above: a shown modal dialog must not be removed from the page. -->
+    <StayEditDialog :stay="editingStay" :saving="savingCorrection" @save="saveStay" @cancel="editingStay = null" />
+    <OutingEditDialog
+      :outing="editingOuting"
+      :saving="savingCorrection"
+      @save="saveOuting"
+      @cancel="editingOuting = null"
+    />
   </div>
 </template>

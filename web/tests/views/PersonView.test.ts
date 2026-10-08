@@ -238,4 +238,37 @@ describe('PersonView', () => {
     await flushPromises()
     expect(wrapper.find('[data-testid="person-name"]').text()).toBe('Ana Soto')
   })
+
+  it('does not reset the check-in form of one record when a slow load for another one ends', async () => {
+    let answerFirst: (value: ReturnType<typeof makePerson>) => void = () => {}
+    const slow = new Promise<ReturnType<typeof makePerson>>((resolve) => {
+      answerFirst = resolve
+    })
+    const second = makePerson({ id: uuid(2), first_name: 'Ana', last_name: 'Soto' })
+    vi.mocked(getPerson).mockImplementation((id) => (id === uuid(1) ? slow : Promise.resolve(second)))
+    vi.mocked(listStaysForPerson).mockResolvedValue([pastStay])
+    const { wrapper, router } = await mountWithApp(PersonView, { initialRoute: `/people/${uuid(1)}` })
+    await router.push(`/people/${uuid(2)}?checkIn=1`)
+    await vi.waitFor(() => expect(wrapper.find('form.new-stay-form').exists()).toBe(true))
+    await wrapper.find('#new-stay-bed').setValue('B7')
+    answerFirst(person)
+    await flushPromises()
+    expect((wrapper.find('#new-stay-bed').element as HTMLInputElement).value).toBe('B7')
+  })
+
+  it('does not show "not found" for a record that is still loading after one that was missing', async () => {
+    let answerSecond: (value: ReturnType<typeof makePerson>) => void = () => {}
+    const slow = new Promise<ReturnType<typeof makePerson>>((resolve) => {
+      answerSecond = resolve
+    })
+    vi.mocked(getPerson).mockImplementation((id) => (id === uuid(9) ? Promise.reject(new ApiError('not_found')) : slow))
+    const { wrapper, router } = await mountWithApp(PersonView, { initialRoute: `/people/${uuid(9)}` })
+    await vi.waitFor(() => expect(wrapper.text()).toContain('No encontramos este registro.'))
+    await router.push(`/people/${uuid(1)}`)
+    await flushPromises()
+    expect(wrapper.text()).not.toContain('No encontramos este registro.')
+    expect(wrapper.text()).toContain('Cargando...')
+    answerSecond(person)
+    await vi.waitFor(() => expect(wrapper.find('[data-testid="person-name"]').exists()).toBe(true))
+  })
 })

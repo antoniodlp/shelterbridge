@@ -4,7 +4,11 @@ import { useShelterTime } from '@/composables/useShelterTime'
 import { useCatalogsStore } from '@/stores/catalogs'
 import type { Stay } from '@/types/domain'
 
-defineProps<{ stays: Stay[] }>()
+withDefaults(
+  defineProps<{ stays: Stay[]; canEdit?: boolean; canDelete?: boolean; reopenableId?: string | null }>(),
+  { canEdit: false, canDelete: false, reopenableId: null },
+)
+const emit = defineEmits<{ edit: [stay: Stay]; remove: [stay: Stay]; reopen: [stay: Stay] }>()
 
 const { t } = useI18n()
 const { formatDate } = useShelterTime()
@@ -23,6 +27,9 @@ const catalogs = useCatalogsStore()
           <th scope="col">{{ t('stays.history.caseType') }}</th>
           <th scope="col">{{ t('stays.history.phone') }}</th>
           <th scope="col">{{ t('stays.history.notes') }}</th>
+          <th v-if="canEdit" scope="col">
+            <span class="visually-hidden">{{ t('stays.history.actions') }}</span>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -36,6 +43,27 @@ const catalogs = useCatalogsStore()
           <td>{{ catalogs.label('case_types', stay.case_type_code) }}</td>
           <td>{{ t(`phoneStatus.${stay.phone_status}`) }}</td>
           <td class="text-break">{{ stay.notes }}</td>
+          <td v-if="canEdit" class="text-nowrap">
+            <button type="button" class="btn btn-sm btn-link" @click="emit('edit', stay)">
+              {{ t('stays.edit.action') }}
+            </button>
+            <button
+              v-if="stay.id === reopenableId"
+              type="button"
+              class="btn btn-sm btn-link"
+              @click="emit('reopen', stay)"
+            >
+              {{ t('stays.reopen.action') }}
+            </button>
+            <button
+              v-if="canDelete"
+              type="button"
+              class="btn btn-sm btn-link text-danger"
+              @click="emit('remove', stay)"
+            >
+              {{ t('stays.edit.delete') }}
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>

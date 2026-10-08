@@ -3,6 +3,7 @@ import type { CurrentResident, PhoneStatus, Stay } from '@/types/domain'
 import { cleanText } from '@/lib/text'
 import { supabase } from './client'
 import { toApiError } from './errors'
+import { deleteById, updateVersioned } from './rows'
 
 export async function listCurrentResidents(): Promise<CurrentResident[]> {
   const { data, error } = await supabase.from('current_residents').select('*').order('first_name')
@@ -53,4 +54,14 @@ export async function checkIn(personId: string, stay: NewStayInput): Promise<str
   })
   if (error) throw toApiError(error)
   return data as string
+}
+
+/** Saves only if nobody changed the stay since `expectedUpdatedAt`. `{ exit_date: null }` reopens it. */
+export async function updateStay(id: string, expectedUpdatedAt: string, patch: StayPatch): Promise<Stay> {
+  return updateVersioned('stays', { column: 'id', value: id }, expectedUpdatedAt, cleanStay(patch))
+}
+
+/** Admin only. Deleting a stay also deletes its outings. */
+export async function deleteStay(id: string): Promise<void> {
+  await deleteById('stays', id)
 }

@@ -3,7 +3,11 @@ import { useI18n } from 'vue-i18n'
 import { useShelterTime } from '@/composables/useShelterTime'
 import type { Outing } from '@/types/domain'
 
-defineProps<{ outings: Outing[] }>()
+withDefaults(defineProps<{ outings: Outing[]; canEdit?: boolean; canDelete?: boolean }>(), {
+  canEdit: false,
+  canDelete: false,
+})
+const emit = defineEmits<{ edit: [outing: Outing]; remove: [outing: Outing] }>()
 
 const { t } = useI18n()
 const { formatDateTime } = useShelterTime()
@@ -18,6 +22,9 @@ const { formatDateTime } = useShelterTime()
           <th scope="col">{{ t('outings.list.left') }}</th>
           <th scope="col">{{ t('outings.list.returned') }}</th>
           <th scope="col">{{ t('outings.list.comment') }}</th>
+          <th v-if="canEdit" scope="col">
+            <span class="visually-hidden">{{ t('outings.list.actions') }}</span>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -33,6 +40,19 @@ const { formatDateTime } = useShelterTime()
             <span v-else class="badge text-bg-warning">{{ t('outings.list.notReturned') }}</span>
           </td>
           <td class="text-break">{{ outing.comment }}</td>
+          <td v-if="canEdit" class="text-nowrap">
+            <button type="button" class="btn btn-sm btn-link" @click="emit('edit', outing)">
+              {{ t('outings.edit.action') }}
+            </button>
+            <button
+              v-if="canDelete"
+              type="button"
+              class="btn btn-sm btn-link text-danger"
+              @click="emit('remove', outing)"
+            >
+              {{ t('outings.edit.delete') }}
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>

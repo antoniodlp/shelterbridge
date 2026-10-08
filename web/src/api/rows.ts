@@ -29,3 +29,11 @@ export async function updateVersioned<T extends TableName>(
   }
   return row
 }
+
+// Deletes one row by its id. RLS hides rows the caller may not delete, so deleting nothing
+// means the row is missing or the caller is not allowed to delete it.
+export async function deleteById(table: 'stays' | 'outings', id: string): Promise<void> {
+  const { data, error } = await supabase.from(table).delete().eq('id', id).select('id')
+  if (error) throw toApiError(error)
+  if (!data || data.length === 0) throw new ApiError('not_found')
+}

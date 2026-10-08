@@ -155,7 +155,26 @@
       "comment": "Comentario",
       "exception": "Excepción",
       "notReturned": "No ha regresado",
-      "empty": "Sin salidas en esta estancia."
+      "empty": "Sin salidas en esta estancia.",
+      "actions": "Acciones"
+    },
+    "edit": {
+      "action": "Editar",
+      "title": "Corregir salida",
+      "leftAt": "Salió",
+      "returnedAt": "Regresó",
+      "returnedHelp": "Déjalo vacío si la persona no ha regresado.",
+      "comment": "Comentario",
+      "saved": "Salida corregida.",
+      "delete": "Eliminar",
+      "deleteTitle": "Eliminar salida",
+      "deleteMessage": "Se eliminará esta salida. Úsalo solo para corregir un registro hecho por error.",
+      "deleteConfirm": "Eliminar",
+      "deleted": "Salida eliminada."
+    },
+    "validation": {
+      "future": "La hora no puede ser posterior a este momento.",
+      "returnBeforeLeave": "El regreso debe ser después de la salida."
     }
   },
   "stays": {
@@ -186,7 +205,25 @@
       "caseType": "Tipo de caso",
       "phone": "Teléfono",
       "notes": "Notas",
-      "empty": "Sin estancias registradas."
+      "empty": "Sin estancias registradas.",
+      "actions": "Acciones"
+    },
+    "edit": {
+      "action": "Editar",
+      "title": "Editar estancia",
+      "saved": "Estancia actualizada.",
+      "delete": "Eliminar",
+      "deleteTitle": "Eliminar estancia",
+      "deleteMessage": "Se eliminará esta estancia con todas sus salidas. Úsalo solo para corregir un registro hecho por error.",
+      "deleteConfirm": "Eliminar",
+      "deleted": "Estancia eliminada."
+    },
+    "reopen": {
+      "action": "Reabrir estancia",
+      "title": "Reabrir estancia",
+      "message": "Se quitará la fecha de egreso y la persona volverá a aparecer en el albergue. Úsalo cuando el egreso se registró por error.",
+      "confirm": "Reabrir",
+      "done": "Estancia reabierta."
     },
     "newStay": {
       "action": "Nueva estancia",
