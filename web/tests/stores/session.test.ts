@@ -214,6 +214,35 @@ describe('session store with overlapping loads', () => {
     expect(store.role).toBe('volunteer')
   })
 
+  it('refreshAppUser settles only after a newer load for the same sign-in has finished', async () => {
+    // Signing in makes LoginView await refreshAppUser(), then navigate. If the SIGNED_IN
+    // event started a newer load, refreshAppUser must wait for it, or the route guard
+    // still sees a signed-out store and sends the user back to the login page.
+    vi.mocked(auth.getSession).mockResolvedValue(null)
+    const store = useSessionStore()
+    await store.init()
+    const firstLoad = deferred<AppUser | null>()
+    const eventLoad = deferred<AppUser | null>()
+    vi.mocked(auth.getSession).mockResolvedValue(fakeSession('user-1'))
+    vi.mocked(auth.getMyAppUser).mockReturnValueOnce(firstLoad.promise)
+    vi.mocked(auth.getMyAppUser).mockReturnValueOnce(eventLoad.promise)
+
+    let statusWhenSettled: string | null = null
+    const refreshing = store.refreshAppUser().then(() => {
+      statusWhenSettled = store.status
+    })
+    await vi.waitFor(() => expect(auth.getMyAppUser).toHaveBeenCalledTimes(1))
+    authListener?.(fakeSession('user-1'))
+    await vi.waitFor(() => expect(auth.getMyAppUser).toHaveBeenCalledTimes(2))
+    firstLoad.resolve(fakeAppUser())
+    await flushPromises()
+    eventLoad.resolve(fakeAppUser())
+    await refreshing
+
+    expect(statusWhenSettled).toBe('ready')
+    expect(store.role).toBe('volunteer')
+  })
+
   it('ends with the latest app user when refreshAppUser starts after an event load', async () => {
     vi.mocked(auth.getSession).mockResolvedValue(null)
     const store = useSessionStore()
