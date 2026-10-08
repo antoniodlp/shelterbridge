@@ -114,7 +114,9 @@ export function useResidents() {
     loading.value = true
     try {
       residents.value = await listCurrentResidents()
-      await thumbs.load(residents.value.map((resident) => resident.photo_path))
+      // Thumbnails are optional and fill in when signed: a slow Storage must not hold the row lock.
+      // load() swallows its own failures.
+      void thumbs.load(residents.value.map((resident) => resident.photo_path))
     } catch (error) {
       notify.error(error)
     } finally {

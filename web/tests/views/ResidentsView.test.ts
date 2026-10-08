@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
 import { GridComponent } from '@syncfusion/ej2-vue-grids'
+import { endOuting } from '@/api/outings'
 import { getSignedPhotoUrls } from '@/api/photos'
 import { listCurrentResidents } from '@/api/stays'
+import type { CurrentResident } from '@/types/domain'
 import ResidentsView from '@/views/ResidentsView.vue'
 import { makeResident, uuid } from '../fixtures/data'
 import { mountWithApp } from '../utils/mountWithApp'
@@ -124,6 +127,43 @@ describe('ResidentsView', () => {
       () => expect(wrapper.find('img[src="https://storage.test/rosa_thumb.jpg"]').exists()).toBe(true),
       { timeout: 5000 },
     )
+  })
+
+  it('shows the rows and reports nothing when signing the thumbnails fails', async () => {
+    vi.mocked(getSignedPhotoUrls).mockRejectedValue(new Error('storage down'))
+    const { wrapper } = await mountLoaded()
+    await flushPromises()
+    expect(wrapper.find('img[src^="https://storage.test"]').exists()).toBe(false)
+    expect(rowFor(wrapper, 'Rosa Elena Pérez Lara').exists()).toBe(true)
+    expect(notify.error).not.toHaveBeenCalled()
+  })
+
+  it('does not wait for the thumbnails before the list is ready again', async () => {
+    vi.mocked(getSignedPhotoUrls).mockReturnValue(new Promise(() => {}))
+    const { wrapper } = await mountLoaded()
+    const refresh = wrapper.findAll('button').find((button) => button.text() === 'Actualizar')
+    await vi.waitFor(() => expect(refresh?.attributes('disabled')).toBeUndefined())
+  })
+
+  it('releases the row actions after the reload even when signing the thumbnails hangs', async () => {
+    vi.mocked(getSignedPhotoUrls).mockReturnValue(new Promise(() => {}))
+    vi.mocked(endOuting).mockResolvedValue(uuid(201))
+    const { wrapper } = await mountLoaded()
+    let finishReload: (rows: CurrentResident[]) => void = () => {}
+    vi.mocked(listCurrentResidents).mockReturnValueOnce(
+      new Promise<CurrentResident[]>((resolve) => {
+        finishReload = resolve
+      }),
+    )
+    const rosaSalida = () =>
+      rowFor(wrapper, 'Rosa Elena')
+        .findAll('button')
+        .find((button) => button.text() === 'Salida')?.element as HTMLButtonElement
+    const regreso = rowFor(wrapper, 'Tomás').findAll('button').find((button) => button.text() === 'Regreso')
+    await regreso?.trigger('click')
+    await vi.waitFor(() => expect(rosaSalida().disabled).toBe(true), { timeout: 5000 })
+    finishReload(residents)
+    await vi.waitFor(() => expect(rosaSalida().disabled).toBe(false), { timeout: 5000 })
   })
 
   it('filters by name or bed, ignoring accents and case', async () => {

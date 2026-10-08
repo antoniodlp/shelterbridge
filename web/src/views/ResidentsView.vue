@@ -26,8 +26,11 @@ onMounted(reload)
 /**
  * Runs one row action at a time and always reloads afterwards, so a row that
  * another computer changed shows its real state after the error. The lock is
- * released only when the fresh list is in, because until then the rows still
- * show the old state and a second click would repeat the action.
+ * held until that reload has finished, because until then the rows still show
+ * the old state and a second click would repeat the action. If the reload
+ * fails, the lock is released anyway (the error is reported) and the rows stay
+ * as they were. Thumbnail signing is not part of the reload and never holds
+ * the lock.
  */
 async function runRowAction(row: ResidentRow, action: () => Promise<void>): Promise<void> {
   if (busyStayId.value) return
