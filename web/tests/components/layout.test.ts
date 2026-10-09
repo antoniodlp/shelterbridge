@@ -5,6 +5,7 @@ import { defineComponent, h } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import * as auth from '@/api/auth'
 import App from '@/App.vue'
+import logoUrl from '@/assets/logo.svg'
 import AppNavbar from '@/components/layout/AppNavbar.vue'
 import AppShell from '@/components/layout/AppShell.vue'
 import OfflineBanner from '@/components/layout/OfflineBanner.vue'
@@ -27,6 +28,16 @@ function linkTexts(): string[] {
 }
 
 describe('AppNavbar', () => {
+  it('shows the logo next to the app name in the brand link', async () => {
+    const { wrapper } = await mountWithApp(AppNavbar, { session: { role: 'volunteer' } })
+    const brand = wrapper.get('a.navbar-brand')
+    expect(brand.text()).toBe('ShelterBridge')
+    const logo = brand.get('img')
+    expect(logo.attributes('src')).toBe(logoUrl)
+    // Decorative: the app name right next to it is the accessible text.
+    expect(logo.attributes('alt')).toBe('')
+  })
+
   it('shows the admin menu to an admin', async () => {
     const { wrapper } = await mountWithApp(AppNavbar, { session: { role: 'admin', operatorName: null } })
     expect(wrapper.text()).toContain('Administración')
@@ -118,6 +129,19 @@ describe('App', () => {
     const { wrapper } = await mountApp('/test-blank')
     expect(wrapper.find('nav.navbar').exists()).toBe(false)
     expect(wrapper.get('main h1').text()).toBe('Página sin menú')
+  })
+
+  it('shows the logo above blank pages', async () => {
+    const { wrapper } = await mountApp('/test-blank')
+    const logo = wrapper.get('main img')
+    expect(logo.attributes('src')).toBe(logoUrl)
+    expect(logo.attributes('alt')).toBe('ShelterBridge')
+  })
+
+  it('leaves the logo to the navbar on app pages', async () => {
+    const { wrapper } = await mountApp('/test-app')
+    expect(wrapper.find('main img').exists()).toBe(false)
+    expect(wrapper.get('nav.navbar img').attributes('src')).toBe(logoUrl)
   })
 
   describe('when the session changes while a page is open', () => {

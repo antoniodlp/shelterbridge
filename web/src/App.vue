@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import logoUrl from '@/assets/logo.svg'
 import ConfirmHost from '@/components/common/ConfirmHost.vue'
 import ToastHost from '@/components/common/ToastHost.vue'
 import AppShell from '@/components/layout/AppShell.vue'
 import OfflineBanner from '@/components/layout/OfflineBanner.vue'
 import { useSessionStore } from '@/stores/session'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const session = useSessionStore()
@@ -45,6 +48,7 @@ watch(
     <RouterView />
   </AppShell>
   <main v-else class="container py-4 py-md-5">
+    <img :src="logoUrl" :alt="t('common.appName')" height="72" class="d-block mx-auto mb-4" />
     <RouterView />
   </main>
   <ToastHost />

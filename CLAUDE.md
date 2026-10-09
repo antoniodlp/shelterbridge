@@ -55,6 +55,7 @@ npm run db:lint                                    # checks SQL functions for er
 npm run db:types                                   # regenerates web/src/types/database.ts after a migration
 npm run db:stop                                    # stops local Supabase
 node supabase/scripts/generate-countries-migration.mjs   # regenerates the countries data migration
+node web/scripts/favicon-png.mjs                          # regenerates web/public/favicon.png after editing favicon.svg
 npm run web:dev                                    # web app at http://localhost:5173
 npm run web:test                                   # unit and component tests (Vitest, jsdom)
 npm run web:test:integration                       # web/src/api against local Supabase (run db:reset first)

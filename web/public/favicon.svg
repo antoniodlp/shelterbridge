@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- ShelterBridge tab icon: the house and the start of its rainbow bridge on a
+       tile, cropped so it stays legible at 16 px. The full mark is src/assets/logo.svg.
+       After editing this file run: node web/scripts/favicon-png.mjs -->
+  <rect width="32" height="32" rx="7" fill="#073b4c"/>
+  <path fill="#ffffff" fill-rule="evenodd" d="M3,15 L11,7 L19,15 V28 H3 Z M9,28 V23.5 A4.5,4.5 0 0 1 18,23.5 V28 Z"/>
+  <g fill="none" stroke-width="2">
+    <path d="M10.5,28 A22.5,22.5 0 0 1 33,5.5" stroke="#ef476f"/>
+    <path d="M12.5,28 A20.5,20.5 0 0 1 33,7.5" stroke="#ffd166"/>
+    <path d="M14.5,28 A18.5,18.5 0 0 1 33,9.5" stroke="#06d6a0"/>
+    <path d="M16.5,28 A16.5,16.5 0 0 1 33,11.5" stroke="#118ab2"/>
+  </g>
+</svg>

@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+import logoUrl from '@/assets/logo.svg'
 import { useSignOut } from '@/composables/useSignOut'
 import { useSessionStore } from '@/stores/session'
 
@@ -39,7 +40,10 @@ watch(
 <template>
   <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
     <div class="container-fluid">
-      <RouterLink class="navbar-brand fw-semibold" :to="{ name: 'residents' }">{{ t('common.appName') }}</RouterLink>
+      <RouterLink class="navbar-brand fw-semibold d-flex align-items-center gap-2" :to="{ name: 'residents' }">
+        <img :src="logoUrl" alt="" height="28" />
+        {{ t('common.appName') }}
+      </RouterLink>
       <button
         class="navbar-toggler"
         type="button"

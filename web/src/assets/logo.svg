@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="4 7 67 31">
+  <!-- ShelterBridge mark: a house whose open door lets out a rainbow that spans
+       to the ground like a bridge. The tab icon (public/favicon.svg) is a cropped
+       version of the same drawing on a tile. -->
+  <!-- House -->
+  <path fill="#073b4c" d="M6,20 L18,8 L30,20 V36 H6 Z"/>
+  <!-- Lit doorway -->
+  <path fill="#fff4d6" d="M13,36 V29 A7,7 0 0 1 27,29 V36 Z"/>
+  <!-- Rainbow bridge: four bands leaving the doorway and landing on the ground -->
+  <g fill="none" stroke-width="2.5">
+    <path d="M16.25,36 A25.75,20 0 0 1 67.75,36" stroke="#ef476f"/>
+    <path d="M18.75,36 A23.25,17.5 0 0 1 65.25,36" stroke="#ffd166"/>
+    <path d="M21.25,36 A20.75,15 0 0 1 62.75,36" stroke="#06d6a0"/>
+    <path d="M23.75,36 A18.25,12.5 0 0 1 60.25,36" stroke="#118ab2"/>
+  </g>
+  <!-- Ground -->
+  <path d="M5,36.6 H70" stroke="#073b4c" stroke-width="1.2" stroke-linecap="round"/>
+</svg>
