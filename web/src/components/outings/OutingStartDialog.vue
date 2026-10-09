@@ -39,24 +39,27 @@ function onClose(args: CloseEventArgs): void {
     width="min(28rem, 95vw)"
     @close="onClose"
   >
-    <form v-if="name !== null" class="outing-start-form" @submit.prevent="submit">
-      <p class="fw-semibold">{{ name }}</p>
-      <label for="outing-comment" class="form-label">{{ t('outings.startDialog.commentLabel') }}</label>
-      <input
-        id="outing-comment"
-        v-model="comment"
-        type="text"
-        class="form-control"
-        maxlength="500"
-        autocomplete="off"
-        :placeholder="t('outings.startDialog.commentPlaceholder')"
-      />
-      <div class="d-flex justify-content-end gap-2 mt-3">
-        <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
-          {{ t('common.cancel') }}
-        </button>
-        <button type="submit" class="btn btn-primary">{{ t('outings.startDialog.submit') }}</button>
-      </div>
-    </form>
+    <div>
+      <!-- Always rendered, so the Dialog moves it into its padded content area when created. -->
+      <form v-if="name !== null" class="outing-start-form" @submit.prevent="submit">
+        <p class="fw-semibold">{{ name }}</p>
+        <label for="outing-comment" class="form-label">{{ t('outings.startDialog.commentLabel') }}</label>
+        <input
+          id="outing-comment"
+          v-model="comment"
+          type="text"
+          class="form-control"
+          maxlength="500"
+          autocomplete="off"
+          :placeholder="t('outings.startDialog.commentPlaceholder')"
+        />
+        <div class="d-flex justify-content-end gap-2 mt-3">
+          <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
+            {{ t('common.cancel') }}
+          </button>
+          <button type="submit" class="btn btn-primary">{{ t('outings.startDialog.submit') }}</button>
+        </div>
+      </form>
+    </div>
   </ejs-dialog>
 </template>

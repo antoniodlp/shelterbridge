@@ -58,40 +58,43 @@ function onClose(args: CloseEventArgs): void {
     width="min(32rem, 95vw)"
     @close="onClose"
   >
-    <form v-if="form" class="outing-edit-form" novalidate @submit.prevent="submit">
-      <div class="mb-3">
-        <label for="outing-left-at" class="form-label">{{ t('outings.edit.leftAt') }}</label>
-        <DateTimeField id="outing-left-at" v-model="form.left_at" :max="now" :invalid="!!errors.left_at" />
-        <div v-if="errors.left_at" class="invalid-feedback d-block">{{ t(errors.left_at) }}</div>
-      </div>
-      <div class="mb-3">
-        <label for="outing-returned-at" class="form-label">{{ t('outings.edit.returnedAt') }}</label>
-        <DateTimeField
-          id="outing-returned-at"
-          v-model="form.returned_at"
-          :max="now"
-          :invalid="!!errors.returned_at"
-        />
-        <div class="form-text">{{ t('outings.edit.returnedHelp') }}</div>
-        <div v-if="errors.returned_at" class="invalid-feedback d-block">{{ t(errors.returned_at) }}</div>
-      </div>
-      <div class="mb-3">
-        <label for="outing-edit-comment" class="form-label">{{ t('outings.edit.comment') }}</label>
-        <input
-          id="outing-edit-comment"
-          v-model="form.comment"
-          type="text"
-          class="form-control"
-          maxlength="500"
-          autocomplete="off"
-        />
-      </div>
-      <div class="d-flex justify-content-end gap-2">
-        <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
-          {{ t('common.cancel') }}
-        </button>
-        <button type="submit" class="btn btn-primary" :disabled="saving">{{ t('common.save') }}</button>
-      </div>
-    </form>
+    <div>
+      <!-- Always rendered, so the Dialog moves it into its padded content area when created. -->
+      <form v-if="form" class="outing-edit-form" novalidate @submit.prevent="submit">
+        <div class="mb-3">
+          <label for="outing-left-at" class="form-label">{{ t('outings.edit.leftAt') }}</label>
+          <DateTimeField id="outing-left-at" v-model="form.left_at" :max="now" :invalid="!!errors.left_at" />
+          <div v-if="errors.left_at" class="invalid-feedback d-block">{{ t(errors.left_at) }}</div>
+        </div>
+        <div class="mb-3">
+          <label for="outing-returned-at" class="form-label">{{ t('outings.edit.returnedAt') }}</label>
+          <DateTimeField
+            id="outing-returned-at"
+            v-model="form.returned_at"
+            :max="now"
+            :invalid="!!errors.returned_at"
+          />
+          <div class="form-text">{{ t('outings.edit.returnedHelp') }}</div>
+          <div v-if="errors.returned_at" class="invalid-feedback d-block">{{ t(errors.returned_at) }}</div>
+        </div>
+        <div class="mb-3">
+          <label for="outing-edit-comment" class="form-label">{{ t('outings.edit.comment') }}</label>
+          <input
+            id="outing-edit-comment"
+            v-model="form.comment"
+            type="text"
+            class="form-control"
+            maxlength="500"
+            autocomplete="off"
+          />
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
+            {{ t('common.cancel') }}
+          </button>
+          <button type="submit" class="btn btn-primary" :disabled="saving">{{ t('common.save') }}</button>
+        </div>
+      </form>
+    </div>
   </ejs-dialog>
 </template>

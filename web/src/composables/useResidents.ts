@@ -5,7 +5,6 @@ import { useNotify } from '@/composables/useNotify'
 import { useShelterTime } from '@/composables/useShelterTime'
 import { useThumbnails } from '@/composables/useThumbnails'
 import { formatAge, fullName, normalizeForSearch } from '@/lib/people'
-import { useCatalogsStore } from '@/stores/catalogs'
 import type { CurrentResident, PhoneStatus, Presence } from '@/types/domain'
 
 export interface HeadcountSummary {
@@ -20,13 +19,15 @@ export interface HeadcountSummary {
 export interface ResidentRow {
   stay_id: string
   person_id: string
+  first_name: string
+  last_name: string
   full_name: string
   photo_path: string | null
   thumb_url: string | null
   age: number | null
   age_label: string
-  gender_label: string
-  country_label: string
+  /** The carer's name when the carer is staying too, otherwise empty. */
+  carer_name: string
   bed: string
   entry_date: string
   entry_date_label: string
@@ -37,6 +38,7 @@ export interface ResidentRow {
   out_since_label: string
   outings_today: number
   phone_status: PhoneStatus
+  phone_status_label: string
   is_minor: boolean
   is_unaccompanied_minor: boolean
   busy: boolean
@@ -63,7 +65,6 @@ export function matchesQuery(row: Pick<ResidentRow, 'full_name' | 'bed'>, query:
 export function useResidents() {
   const { t } = useI18n()
   const notify = useNotify()
-  const catalogs = useCatalogsStore()
   const time = useShelterTime()
   const thumbs = useThumbnails()
 
@@ -74,18 +75,22 @@ export function useResidents() {
 
   const counts = computed(() => countResidents(residents.value))
 
-  function toRow(resident: CurrentResident): ResidentRow {
+  /** `byPerson` maps person ids to the residents, so a carer who is staying is found without another request. */
+  function toRow(resident: CurrentResident, byPerson: Map<string | null, CurrentResident>): ResidentRow {
     const presence: Presence = resident.presence === 'outside' ? 'outside' : 'inside'
+    const phoneStatus = (resident.phone_status ?? 'none') as PhoneStatus
+    const carer = resident.carer_id ? byPerson.get(resident.carer_id) : undefined
     return {
       stay_id: resident.stay_id ?? '',
       person_id: resident.person_id ?? '',
+      first_name: resident.first_name ?? '',
+      last_name: resident.last_name ?? '',
       full_name: fullName(resident.first_name, resident.last_name),
       photo_path: resident.photo_path,
       thumb_url: thumbs.thumbUrl(resident.photo_path),
       age: resident.age,
       age_label: formatAge(resident.age, resident.birth_date_estimated),
-      gender_label: catalogs.label('genders', resident.gender_code),
-      country_label: catalogs.label('countries', resident.country_code),
+      carer_name: carer ? fullName(carer.first_name, carer.last_name) : '',
       bed: resident.bed ?? '',
       entry_date: resident.entry_date ?? '',
       entry_date_label: time.formatDate(resident.entry_date),
@@ -95,7 +100,8 @@ export function useResidents() {
       out_since: resident.out_since,
       out_since_label: resident.out_since ? time.formatDateTime(resident.out_since) : '',
       outings_today: resident.outings_today ?? 0,
-      phone_status: (resident.phone_status ?? 'none') as PhoneStatus,
+      phone_status: phoneStatus,
+      phone_status_label: t(`phoneStatus.${phoneStatus}`),
       is_minor: resident.is_minor === true,
       is_unaccompanied_minor: resident.is_unaccompanied_minor === true,
       // One row action runs at a time, so every row's buttons wait for it.
@@ -103,7 +109,10 @@ export function useResidents() {
     }
   }
 
-  const allRows = computed(() => residents.value.map(toRow))
+  const allRows = computed(() => {
+    const byPerson = new Map(residents.value.map((resident) => [resident.person_id, resident]))
+    return residents.value.map((resident) => toRow(resident, byPerson))
+  })
   const rows = computed(() => allRows.value.filter((row) => matchesQuery(row, query.value)))
 
   function findRow(stayId: string): ResidentRow | undefined {

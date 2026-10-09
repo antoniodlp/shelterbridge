@@ -59,9 +59,15 @@ const filterSettings = { type: 'CheckBox' }
         </template>
       </e-column>
       <e-column
-        field="full_name"
-        :header-text="t('residents.columns.name')"
-        width="190"
+        field="first_name"
+        :header-text="t('residents.columns.firstName')"
+        width="130"
+        :allow-filtering="false"
+      />
+      <e-column
+        field="last_name"
+        :header-text="t('residents.columns.lastName')"
+        width="130"
         :allow-filtering="false"
       />
       <e-column
@@ -71,10 +77,27 @@ const filterSettings = { type: 'CheckBox' }
         :allow-filtering="false"
         :template="'age'"
       >
-        <template #age="{ data }">{{ data.age_label }}</template>
+        <template #age="{ data }">
+          <span data-testid="age" :class="{ 'text-danger fw-semibold': data.is_minor }">{{ data.age_label }}</span>
+        </template>
       </e-column>
-      <e-column field="gender_label" :header-text="t('residents.columns.gender')" width="110" />
-      <e-column field="country_label" :header-text="t('residents.columns.country')" width="120" />
+      <e-column
+        field="carer_name"
+        :header-text="t('residents.columns.unaccompanied')"
+        width="170"
+        :allow-filtering="false"
+        :template="'carer'"
+      >
+        <template #carer="{ data }">
+          <span v-if="data.carer_name" data-testid="carer-name">{{ data.carer_name }}</span>
+          <span
+            v-if="data.is_unaccompanied_minor"
+            class="badge text-bg-danger"
+            data-testid="unaccompanied-badge"
+            >{{ t('residents.unaccompaniedBadge') }}</span
+          >
+        </template>
+      </e-column>
       <e-column field="bed" :header-text="t('residents.columns.bed')" width="80" />
       <e-column
         field="entry_date"
@@ -116,22 +139,7 @@ const filterSettings = { type: 'CheckBox' }
       >
         <template #outsince="{ data }">{{ data.out_since_label }}</template>
       </e-column>
-      <e-column
-        field="is_unaccompanied_minor"
-        :header-text="t('residents.columns.unaccompanied')"
-        width="140"
-        :allow-filtering="false"
-        :template="'unaccompanied'"
-      >
-        <template #unaccompanied="{ data }">
-          <span
-            v-if="data.is_unaccompanied_minor"
-            class="badge text-bg-danger"
-            data-testid="unaccompanied-badge"
-            >{{ t('residents.unaccompaniedBadge') }}</span
-          >
-        </template>
-      </e-column>
+      <e-column field="phone_status_label" :header-text="t('residents.columns.phone')" width="130" />
       <e-column
         :header-text="t('residents.columns.actions')"
         width="250"

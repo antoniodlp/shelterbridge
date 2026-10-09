@@ -1,6 +1,7 @@
 // Fictitious rows for component tests. None of these people exist.
 // Catalogs and app users come from Plan 2: testCatalogs and fakeAppUser in tests/utils/mountWithApp.ts.
 import type { AuditEntry, CurrentResident, Outing, Person, Stay } from '@/types/domain'
+import type { ResidentRow } from '@/composables/useResidents'
 
 export const STAMP = '2026-10-01T15:00:00+00:00'
 
@@ -110,6 +111,36 @@ export function makeAuditEntry(overrides: Partial<AuditEntry> = {}): AuditEntry 
     action: 'update',
     old_data: { last_name: 'Pérez' },
     new_data: { last_name: 'Pérez Lara' },
+    ...overrides,
+  }
+}
+
+export function makeResidentRow(overrides: Partial<ResidentRow> = {}): ResidentRow {
+  return {
+    stay_id: uuid(101),
+    person_id: uuid(1),
+    first_name: 'Rosa Elena',
+    last_name: 'Pérez Lara',
+    full_name: 'Rosa Elena Pérez Lara',
+    photo_path: null,
+    thumb_url: null,
+    age: 30,
+    age_label: '30',
+    carer_name: '',
+    bed: 'A1',
+    entry_date: '2026-10-03',
+    entry_date_label: '03/10/2026',
+    days_in_shelter: 4,
+    presence: 'inside',
+    presence_label: 'Dentro',
+    out_since: null,
+    out_since_label: '',
+    outings_today: 0,
+    phone_status: 'none',
+    phone_status_label: 'Sin teléfono',
+    is_minor: false,
+    is_unaccompanied_minor: false,
+    busy: false,
     ...overrides,
   }
 }

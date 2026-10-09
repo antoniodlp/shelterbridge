@@ -37,6 +37,7 @@ const residents = [
     gender_code: 'male',
     country_code: 'MX',
     bed: 'B2',
+    phone_status: 'in_custody',
     presence: 'outside',
     out_since: '2026-10-07T16:30:00+00:00',
     open_outing_id: uuid(201),
@@ -51,6 +52,19 @@ const residents = [
     birth_date: '2011-05-01',
     is_minor: true,
     is_unaccompanied_minor: true,
+  }),
+  // A minor whose carer (Rosa Elena) is staying too.
+  makeResident({
+    stay_id: uuid(104),
+    person_id: uuid(4),
+    first_name: 'Diego',
+    last_name: 'Ramos',
+    bed: 'A1',
+    age: 8,
+    birth_date: '2018-02-10',
+    carer_id: uuid(1),
+    is_minor: true,
+    is_unaccompanied_minor: false,
   }),
 ]
 
@@ -94,29 +108,82 @@ describe('ResidentsView', () => {
 
   it('shows the headcount', async () => {
     const { wrapper } = await mountLoaded()
-    expect(wrapper.find('[data-testid="count-total"]').text()).toBe('3')
-    expect(wrapper.find('[data-testid="count-inside"]').text()).toBe('2')
+    expect(wrapper.find('[data-testid="count-total"]').text()).toBe('4')
+    expect(wrapper.find('[data-testid="count-inside"]').text()).toBe('3')
     expect(wrapper.find('[data-testid="count-outside"]').text()).toBe('1')
-    expect(wrapper.find('[data-testid="count-minors"]').text()).toBe('1')
+    expect(wrapper.find('[data-testid="count-minors"]').text()).toBe('2')
     expect(wrapper.find('[data-testid="count-unaccompanied"]').text()).toBe('1')
   })
 
-  it('lists residents with catalog labels, estimated age, dates and badges', async () => {
+  it('shows the columns in the agreed order', async () => {
     const { wrapper } = await mountLoaded()
-    const rosa = rowFor(wrapper, 'Rosa Elena Pérez Lara')
-    expect(rosa.text()).toContain('~30')
-    expect(rosa.text()).toContain('Mujer')
-    expect(rosa.text()).toContain('Honduras')
+    const headers = wrapper.findAll('.e-headercell .e-headertext').map((header) => header.text())
+    expect(headers).toEqual([
+      'Foto',
+      'Nombre',
+      'Apellidos',
+      'Edad',
+      'Acompañamiento',
+      'Cama',
+      'Ingreso',
+      'Días',
+      'Presencia',
+      'Fuera desde',
+      'Teléfono',
+      'Acciones',
+    ])
+  })
+
+  it('shows the first and last name in separate cells', async () => {
+    const { wrapper } = await mountLoaded()
+    const cells = rowFor(wrapper, 'Rosa Elena')
+      .findAll('td')
+      .map((cell) => cell.text())
+    expect(cells).toContain('Rosa Elena')
+    expect(cells).toContain('Pérez Lara')
+  })
+
+  it('shows the age in red only for minors, keeping the estimate mark', async () => {
+    const { wrapper } = await mountLoaded()
+    const rosaAge = rowFor(wrapper, 'Rosa Elena').find('[data-testid="age"]')
+    expect(rosaAge.text()).toBe('~30')
+    expect(rosaAge.classes()).not.toContain('text-danger')
+
+    const luciaAge = rowFor(wrapper, 'Lucía').find('[data-testid="age"]')
+    expect(luciaAge.text()).toBe('15')
+    expect(luciaAge.classes()).toContain('text-danger')
+  })
+
+  it('shows the carer name, or the unaccompanied badge, in the Acompañamiento column', async () => {
+    const { wrapper } = await mountLoaded()
+    const diego = rowFor(wrapper, 'Diego')
+    expect(diego.find('[data-testid="carer-name"]').text()).toBe('Rosa Elena Pérez Lara')
+    expect(diego.find('[data-testid="unaccompanied-badge"]').exists()).toBe(false)
+
+    const lucia = rowFor(wrapper, 'Lucía')
+    expect(lucia.find('[data-testid="carer-name"]').exists()).toBe(false)
+    expect(lucia.find('[data-testid="unaccompanied-badge"]').text()).toBe('Menor sin acompañante')
+
+    const rosa = rowFor(wrapper, 'Rosa Elena')
+    expect(rosa.find('[data-testid="carer-name"]').exists()).toBe(false)
+    expect(rosa.find('[data-testid="unaccompanied-badge"]').exists()).toBe(false)
+  })
+
+  it('shows the phone status as a label', async () => {
+    const { wrapper } = await mountLoaded()
+    expect(rowFor(wrapper, 'Rosa Elena').text()).toContain('Sin teléfono')
+    expect(rowFor(wrapper, 'Tomás').text()).toContain('En resguardo')
+  })
+
+  it('shows dates and presence', async () => {
+    const { wrapper } = await mountLoaded()
+    const rosa = rowFor(wrapper, 'Rosa Elena')
     expect(rosa.text()).toContain('03/10/2026')
     expect(rosa.find('[data-testid="presence"]').attributes('data-presence')).toBe('inside')
-    expect(rosa.find('[data-testid="unaccompanied-badge"]').exists()).toBe(false)
 
-    const tomas = rowFor(wrapper, 'Tomás Gutiérrez')
+    const tomas = rowFor(wrapper, 'Tomás')
     expect(tomas.find('[data-testid="presence"]').attributes('data-presence')).toBe('outside')
     expect(tomas.text()).toContain('07/10/2026 10:30')
-
-    const lucia = rowFor(wrapper, 'Lucía Martínez')
-    expect(lucia.find('[data-testid="unaccompanied-badge"]').text()).toBe('Menor sin acompañante')
   })
 
   it('signs every thumbnail in one request and shows it', async () => {
@@ -134,7 +201,7 @@ describe('ResidentsView', () => {
     const { wrapper } = await mountLoaded()
     await flushPromises()
     expect(wrapper.find('img[src^="https://storage.test"]').exists()).toBe(false)
-    expect(rowFor(wrapper, 'Rosa Elena Pérez Lara').exists()).toBe(true)
+    expect(rowFor(wrapper, 'Rosa Elena').exists()).toBe(true)
     expect(notify.error).not.toHaveBeenCalled()
   })
 

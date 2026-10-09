@@ -68,7 +68,7 @@ npm --prefix web run test -- tests/views/ResidentsView.test.ts   # one unit test
 
 Component tests mount with `web/tests/utils/mountWithApp.ts` and mock `@/api/*`. A missing i18n key fails the unit tests. Syncfusion theme CSS is imported per component in `web/src/main.ts` from `@syncfusion/ej2-bootstrap5.3-theme`. Global styles and the bundled Clarity City font live in `web/src/assets/app.css`, imported last in `main.ts` so its `:root` overrides win.
 
-Web conventions the tests rely on: Syncfusion pickers and dropdowns are bound with `:value` and a change handler (not `v-model`); Syncfusion Dialogs stay mounted and bind `visible`, with `v-if` only on the content inside; Grid cells read only precomputed row fields; test ids use `data-testid`; dates are typed into Syncfusion inputs with `typeInto()` from `web/tests/utils/syncfusion.ts`.
+Web conventions the tests rely on: Syncfusion pickers and dropdowns are bound with `:value` and a change handler (not `v-model`); Syncfusion Dialogs stay mounted and bind `visible`, with the slot content in an always-rendered `<div>` (the Dialog moves it into its padded content area when created) and `v-if` only on the form inside; Grid cells read only precomputed row fields; test ids use `data-testid`; dates are typed into Syncfusion inputs with `typeInto()` from `web/tests/utils/syncfusion.ts`.
 
 Local dev users (password `shelterbridge-dev`): `admin@`, `legal@`, `psychology@` and `volunteer@shelterbridge.test`. Auth emails go to Mailpit at http://127.0.0.1:54324. Google sign-in is optional locally; see README.md.
 

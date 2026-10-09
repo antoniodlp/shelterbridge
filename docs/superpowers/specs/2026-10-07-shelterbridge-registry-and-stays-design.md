@@ -450,7 +450,7 @@ If the newest stay was checked out today by mistake, any role can reopen it from
 ### 9.4 Daily operations (`/residents`)
 
 - **Headcount bar:** total residents, inside, outside, minors, and unaccompanied minors.
-- **Grid columns:** thumbnail, name, age (with `~` when estimated), gender, country, bed, entry date, days in shelter, presence badge, out since, and an unaccompanied-minor badge. Filtering, sorting and quick search are client-side.
+- **Grid columns:** thumbnail, first name, last name, age (with `~` when estimated, in red for minors), carer ("Acompañamiento": the carer's name when the carer is staying too, plus the unaccompanied-minor badge), bed, entry date, days in shelter, presence badge, out since, phone status, and actions. Filtering, sorting and quick search are client-side.
 - **Row actions:**
   - **Salida / Regreso** (outing / return) toggles according to presence.
     - Starting an outing when `outings_today ≥ 1` shows a confirmation ("Ya salió hoy, ¿registrar como excepción?"), then calls `start_outing` with `confirm_exception = true`.

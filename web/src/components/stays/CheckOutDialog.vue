@@ -57,39 +57,42 @@ function onClose(args: CloseEventArgs): void {
     width="min(30rem, 95vw)"
     @close="onClose"
   >
-    <form v-if="resident" class="check-out-form" novalidate @submit.prevent="submit">
-      <p class="fw-semibold">{{ resident.full_name }}</p>
-      <div
-        v-if="resident.phone_status === 'in_custody'"
-        class="alert alert-warning py-2"
-        role="alert"
-        data-testid="phone-warning"
-      >
-        {{ t('stays.checkOut.phoneWarning') }}
-      </div>
-      <div
-        v-if="resident.presence === 'outside'"
-        class="alert alert-warning py-2"
-        role="alert"
-        data-testid="outside-warning"
-      >
-        {{ t('stays.checkOut.outsideWarning') }}
-      </div>
-      <label for="check-out-date" class="form-label">{{ t('stays.checkOut.exitDate') }}</label>
-      <DateField
-        id="check-out-date"
-        v-model="exitDate"
-        :min="resident.entry_date"
-        :max="todayDate"
-        :invalid="submitted && error !== null"
-      />
-      <div v-if="submitted && error" class="invalid-feedback d-block">{{ t(error) }}</div>
-      <div class="d-flex justify-content-end gap-2 mt-3">
-        <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
-          {{ t('common.cancel') }}
-        </button>
-        <button type="submit" class="btn btn-danger">{{ t('stays.checkOut.submit') }}</button>
-      </div>
-    </form>
+    <div>
+      <!-- Always rendered, so the Dialog moves it into its padded content area when created. -->
+      <form v-if="resident" class="check-out-form" novalidate @submit.prevent="submit">
+        <p class="fw-semibold">{{ resident.full_name }}</p>
+        <div
+          v-if="resident.phone_status === 'in_custody'"
+          class="alert alert-warning py-2"
+          role="alert"
+          data-testid="phone-warning"
+        >
+          {{ t('stays.checkOut.phoneWarning') }}
+        </div>
+        <div
+          v-if="resident.presence === 'outside'"
+          class="alert alert-warning py-2"
+          role="alert"
+          data-testid="outside-warning"
+        >
+          {{ t('stays.checkOut.outsideWarning') }}
+        </div>
+        <label for="check-out-date" class="form-label">{{ t('stays.checkOut.exitDate') }}</label>
+        <DateField
+          id="check-out-date"
+          v-model="exitDate"
+          :min="resident.entry_date"
+          :max="todayDate"
+          :invalid="submitted && error !== null"
+        />
+        <div v-if="submitted && error" class="invalid-feedback d-block">{{ t(error) }}</div>
+        <div class="d-flex justify-content-end gap-2 mt-3">
+          <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
+            {{ t('common.cancel') }}
+          </button>
+          <button type="submit" class="btn btn-danger">{{ t('stays.checkOut.submit') }}</button>
+        </div>
+      </form>
+    </div>
   </ejs-dialog>
 </template>

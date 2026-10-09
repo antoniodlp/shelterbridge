@@ -2,39 +2,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import CheckOutDialog from '@/components/stays/CheckOutDialog.vue'
 import type { ResidentRow } from '@/composables/useResidents'
 import { todayIn } from '@/lib/shelterTime'
-import { uuid } from '../../fixtures/data'
+import { makeResidentRow as makeRow, uuid } from '../../fixtures/data'
 import { mountWithApp } from '../../utils/mountWithApp'
 import { body, typeInto } from '../../utils/syncfusion'
 
 type Wrapper = Awaited<ReturnType<typeof mountWithApp>>['wrapper']
-
-function makeRow(overrides: Partial<ResidentRow> = {}): ResidentRow {
-  return {
-    stay_id: uuid(101),
-    person_id: uuid(1),
-    full_name: 'Rosa Elena Pérez Lara',
-    photo_path: null,
-    thumb_url: null,
-    age: 30,
-    age_label: '30',
-    gender_label: 'Mujer',
-    country_label: 'Honduras',
-    bed: 'A1',
-    entry_date: '2026-10-03',
-    entry_date_label: '03/10/2026',
-    days_in_shelter: 4,
-    presence: 'inside',
-    presence_label: 'Dentro',
-    out_since: null,
-    out_since_label: '',
-    outings_today: 0,
-    phone_status: 'none',
-    is_minor: false,
-    is_unaccompanied_minor: false,
-    busy: false,
-    ...overrides,
-  }
-}
 
 async function open(resident: ResidentRow): Promise<Wrapper> {
   const { wrapper } = await mountWithApp(CheckOutDialog, { props: { resident } })

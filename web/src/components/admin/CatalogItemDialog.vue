@@ -63,59 +63,62 @@ function onClose(args: CloseEventArgs): void {
     width="min(32rem, 95vw)"
     @close="onClose"
   >
-    <form v-if="open" class="catalog-item-form" novalidate @submit.prevent="submit">
-      <div class="mb-3">
-        <label for="catalog-code" class="form-label">{{ t('admin.catalogs.dialog.code') }}</label>
-        <input
-          id="catalog-code"
-          v-model="form.code"
-          type="text"
-          class="form-control"
-          :class="{ 'is-invalid': errors.code }"
-          :readonly="!isNew"
-          autocomplete="off"
-        />
-        <div class="form-text">{{ codeHelp }}</div>
-        <div v-if="errors.code" class="invalid-feedback d-block">{{ t(errors.code) }}</div>
-      </div>
-      <div class="mb-3">
-        <label for="catalog-label-es" class="form-label">{{ t('admin.catalogs.dialog.labelEs') }}</label>
-        <input
-          id="catalog-label-es"
-          v-model="form.label_es"
-          type="text"
-          class="form-control"
-          :class="{ 'is-invalid': errors.label_es }"
-          autocomplete="off"
-        />
-        <div v-if="errors.label_es" class="invalid-feedback">{{ t(errors.label_es) }}</div>
-      </div>
-      <div class="mb-3">
-        <label for="catalog-label-en" class="form-label">{{ t('admin.catalogs.dialog.labelEn') }}</label>
-        <input id="catalog-label-en" v-model="form.label_en" type="text" class="form-control" autocomplete="off" />
-      </div>
-      <div class="mb-3">
-        <label for="catalog-order" class="form-label">{{ t('admin.catalogs.dialog.order') }}</label>
-        <input
-          id="catalog-order"
-          v-model="form.sort_order"
-          type="text"
-          inputmode="numeric"
-          class="form-control"
-          :class="{ 'is-invalid': errors.sort_order }"
-        />
-        <div v-if="errors.sort_order" class="invalid-feedback">{{ t(errors.sort_order) }}</div>
-      </div>
-      <div class="form-check mb-3">
-        <input id="catalog-active" v-model="form.active" class="form-check-input" type="checkbox" />
-        <label for="catalog-active" class="form-check-label">{{ t('admin.catalogs.dialog.active') }}</label>
-      </div>
-      <div class="d-flex justify-content-end gap-2">
-        <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
-          {{ t('common.cancel') }}
-        </button>
-        <button type="submit" class="btn btn-primary" :disabled="saving">{{ t('common.save') }}</button>
-      </div>
-    </form>
+    <div>
+      <!-- Always rendered, so the Dialog moves it into its padded content area when created. -->
+      <form v-if="open" class="catalog-item-form" novalidate @submit.prevent="submit">
+        <div class="mb-3">
+          <label for="catalog-code" class="form-label">{{ t('admin.catalogs.dialog.code') }}</label>
+          <input
+            id="catalog-code"
+            v-model="form.code"
+            type="text"
+            class="form-control"
+            :class="{ 'is-invalid': errors.code }"
+            :readonly="!isNew"
+            autocomplete="off"
+          />
+          <div class="form-text">{{ codeHelp }}</div>
+          <div v-if="errors.code" class="invalid-feedback d-block">{{ t(errors.code) }}</div>
+        </div>
+        <div class="mb-3">
+          <label for="catalog-label-es" class="form-label">{{ t('admin.catalogs.dialog.labelEs') }}</label>
+          <input
+            id="catalog-label-es"
+            v-model="form.label_es"
+            type="text"
+            class="form-control"
+            :class="{ 'is-invalid': errors.label_es }"
+            autocomplete="off"
+          />
+          <div v-if="errors.label_es" class="invalid-feedback">{{ t(errors.label_es) }}</div>
+        </div>
+        <div class="mb-3">
+          <label for="catalog-label-en" class="form-label">{{ t('admin.catalogs.dialog.labelEn') }}</label>
+          <input id="catalog-label-en" v-model="form.label_en" type="text" class="form-control" autocomplete="off" />
+        </div>
+        <div class="mb-3">
+          <label for="catalog-order" class="form-label">{{ t('admin.catalogs.dialog.order') }}</label>
+          <input
+            id="catalog-order"
+            v-model="form.sort_order"
+            type="text"
+            inputmode="numeric"
+            class="form-control"
+            :class="{ 'is-invalid': errors.sort_order }"
+          />
+          <div v-if="errors.sort_order" class="invalid-feedback">{{ t(errors.sort_order) }}</div>
+        </div>
+        <div class="form-check mb-3">
+          <input id="catalog-active" v-model="form.active" class="form-check-input" type="checkbox" />
+          <label for="catalog-active" class="form-check-label">{{ t('admin.catalogs.dialog.active') }}</label>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
+            {{ t('common.cancel') }}
+          </button>
+          <button type="submit" class="btn btn-primary" :disabled="saving">{{ t('common.save') }}</button>
+        </div>
+      </form>
+    </div>
   </ejs-dialog>
 </template>

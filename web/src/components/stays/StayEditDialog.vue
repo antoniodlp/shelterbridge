@@ -57,14 +57,17 @@ function onClose(args: CloseEventArgs): void {
     width="min(40rem, 95vw)"
     @close="onClose"
   >
-    <form v-if="form" class="stay-edit-form" novalidate @submit.prevent="submit">
-      <StayForm v-model="form" :errors="errors" id-prefix="stay-edit" :show-exit-date="closed" />
-      <div class="d-flex justify-content-end gap-2 mt-3">
-        <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
-          {{ t('common.cancel') }}
-        </button>
-        <button type="submit" class="btn btn-primary" :disabled="saving">{{ t('common.save') }}</button>
-      </div>
-    </form>
+    <div>
+      <!-- Always rendered, so the Dialog moves it into its padded content area when created. -->
+      <form v-if="form" class="stay-edit-form" novalidate @submit.prevent="submit">
+        <StayForm v-model="form" :errors="errors" id-prefix="stay-edit" :show-exit-date="closed" />
+        <div class="d-flex justify-content-end gap-2 mt-3">
+          <button type="button" class="btn btn-outline-secondary" @click="emit('cancel')">
+            {{ t('common.cancel') }}
+          </button>
+          <button type="submit" class="btn btn-primary" :disabled="saving">{{ t('common.save') }}</button>
+        </div>
+      </form>
+    </div>
   </ejs-dialog>
 </template>
