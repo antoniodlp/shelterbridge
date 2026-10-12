@@ -2,6 +2,9 @@ import type { NewStayInput, StayPatch } from '@/api/stays'
 import type { FieldErrors } from '@/components/forms/fieldErrors'
 import type { PhoneStatus, Stay } from '@/types/domain'
 
+/** Every phone status, in the order the forms and the residents grid offer them. */
+export const PHONE_STATUSES: readonly PhoneStatus[] = ['none', 'with_person', 'in_custody']
+
 export interface StayFormValue {
   entry_date: string | null
   exit_date: string | null

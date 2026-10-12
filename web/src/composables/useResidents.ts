@@ -39,6 +39,8 @@ export interface ResidentRow {
   outings_today: number
   phone_status: PhoneStatus
   phone_status_label: string
+  /** The stay's `updated_at` when the list was loaded, for the in-cell edits' concurrency check. */
+  stay_updated_at: string
   is_minor: boolean
   is_unaccompanied_minor: boolean
   busy: boolean
@@ -102,6 +104,7 @@ export function useResidents() {
       outings_today: resident.outings_today ?? 0,
       phone_status: phoneStatus,
       phone_status_label: t(`phoneStatus.${phoneStatus}`),
+      stay_updated_at: resident.stay_updated_at ?? '',
       is_minor: resident.is_minor === true,
       is_unaccompanied_minor: resident.is_unaccompanied_minor === true,
       // One row action runs at a time, so every row's buttons wait for it.

@@ -131,7 +131,13 @@
       "actions": "Acciones"
     },
     "unaccompaniedBadge": "Menor sin acompañante",
-    "viewRecord": "Ver ficha"
+    "viewRecord": "Ver ficha",
+    "inline": {
+      "bedLabel": "Cama de {name}",
+      "phoneLabel": "Teléfono de {name}",
+      "bedSaved": "Cama actualizada: {name}",
+      "phoneSaved": "Teléfono actualizado: {name}"
+    }
   },
   "outings": {
     "start": "Salida",

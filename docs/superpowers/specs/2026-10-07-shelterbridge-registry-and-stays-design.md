@@ -450,6 +450,7 @@ If the newest stay was checked out today by mistake, any role can reopen it from
 
 - **Headcount bar:** total residents, inside, outside, minors, and unaccompanied minors.
 - **Grid columns:** thumbnail, first name, last name, age (in red for minors), carer ("Acompañamiento": the carer's name when the carer is staying too, plus the unaccompanied-minor badge), bed, entry date, days in shelter, presence badge, out since, phone status, and actions. Filtering, sorting and quick search are client-side.
+- **In-cell edits:** the bed is a text field in its cell and the phone status a select. The bed saves when the field is left or on Enter, if it changed (Escape restores it); the phone status saves as soon as another option is picked. Both update `stays` through `api/` with the stay's `updated_at` from the last load, so a stay changed on another computer fails with `stale_record`. Like the row actions, each save holds the one-action-at-a-time lock and reloads the list afterwards, so the cell then shows what is saved.
 - **Row actions:**
   - **Salida / Regreso** (outing / return) toggles according to presence.
     - Starting an outing when `outings_today ≥ 1` first shows a confirmation ("Ya salió hoy, ¿registrar como excepción?"). Declining leaves everything as it was. Accepting opens the comment dialog, and the outing is then sent with `confirm_exception = true`.
@@ -501,7 +502,7 @@ If the newest stay was checked out today by mistake, any role can reopen it from
 | Database | pgTAP via `supabase test db` | See the list below |
 | `api/` | Vitest against local Supabase | Each function as each seeded role; the error → `ApiError` mapping; `stale_record` detection |
 | Components | Vitest + Vue Test Utils, with `api/` mocked | Duplicate panel, Salida/Regreso toggle and exception confirmation, check-out warnings, minor/carer picker, unaccompanied badge |
-| End-to-end | Playwright against local Supabase | ① new person + check-in ② returning person caught by the duplicate panel → new stay ③ outing → return → check-out |
+| End-to-end | Playwright against local Supabase | ① new person + check-in ② returning person caught by the duplicate panel → new stay ③ outing → return → check-out ④ bed and phone status edited in the residents list |
 
 The database tests cover:
 - **RLS for every role**, plus `anon` and a signed-in user without a role, across every table, the view, and storage;

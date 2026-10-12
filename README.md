@@ -87,7 +87,7 @@ and open http://localhost:5173.
 
 For local testing there are four made-up users, all with the password `shelterbridge-dev`: `admin@shelterbridge.test`, `legal@shelterbridge.test`, `psychology@shelterbridge.test` and `volunteer@shelterbridge.test`. The volunteer account first asks who is on shift.
 
-After that, the home screen lists the made-up residents from the seed data. From there you can register a person (with a photo from the webcam or a file), record outings, returns and check-outs, and open each person's record. Sign in as `admin@shelterbridge.test` to see the admin screens for users, catalogs, settings, the change log and merging duplicates.
+After that, the home screen lists the made-up residents from the seed data. From there you can register a person (with a photo from the webcam or a file), record outings, returns and check-outs, change a bed or phone status right in the list, and open each person's record. Sign in as `admin@shelterbridge.test` to see the admin screens for users, catalogs, settings, the change log and merging duplicates.
 
 Tests:
 

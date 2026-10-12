@@ -3,9 +3,8 @@ import { useI18n } from 'vue-i18n'
 import CatalogSelect from '@/components/common/CatalogSelect.vue'
 import DateField from '@/components/forms/DateField.vue'
 import type { FieldErrors } from '@/components/forms/fieldErrors'
-import type { StayFormValue } from '@/components/stays/stayFormModel'
+import { PHONE_STATUSES, type StayFormValue } from '@/components/stays/stayFormModel'
 import { useShelterTime } from '@/composables/useShelterTime'
-import type { PhoneStatus } from '@/types/domain'
 
 const model = defineModel<StayFormValue>({ required: true })
 withDefaults(defineProps<{ errors?: FieldErrors; idPrefix?: string; showExitDate?: boolean }>(), {
@@ -17,7 +16,6 @@ withDefaults(defineProps<{ errors?: FieldErrors; idPrefix?: string; showExitDate
 const { t } = useI18n()
 const { today } = useShelterTime()
 const todayDate = today()
-const phoneStatuses: PhoneStatus[] = ['none', 'with_person', 'in_custody']
 </script>
 
 <template>
@@ -60,7 +58,7 @@ const phoneStatuses: PhoneStatus[] = ['none', 'with_person', 'in_custody']
     <div class="col-md-6">
       <label :for="`${idPrefix}-phone-status`" class="form-label">{{ t('stays.form.phoneStatus') }}</label>
       <select :id="`${idPrefix}-phone-status`" v-model="model.phone_status" class="form-select">
-        <option v-for="status in phoneStatuses" :key="status" :value="status">
+        <option v-for="status in PHONE_STATUSES" :key="status" :value="status">
           {{ t(`phoneStatus.${status}`) }}
         </option>
       </select>

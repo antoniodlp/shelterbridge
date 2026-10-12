@@ -136,6 +136,7 @@ export function makeResidentRow(overrides: Partial<ResidentRow> = {}): ResidentR
     outings_today: 0,
     phone_status: 'none',
     phone_status_label: 'Sin teléfono',
+    stay_updated_at: STAMP,
     is_minor: false,
     is_unaccompanied_minor: false,
     busy: false,

@@ -29,3 +29,25 @@ test('outing, return, exception and check-out from the residents list', async ({
   await page.getByRole('button', { name: 'Registrar egreso' }).click()
   await expect(row).toHaveCount(0)
 })
+
+test('bed and phone status are edited in place in the residents list', async ({ page }) => {
+  await signIn(page, 'volunteer', 'Turno de prueba')
+  const firstName = uniqueName('Nora')
+  await registerPerson(page, firstName, 'Camas')
+  const name = `${firstName} Camas`
+  const row = await residentRow(page, firstName)
+
+  const bed = row.getByLabel(`Cama de ${name}`)
+  await expect(bed).toHaveValue('Z9')
+  await bed.fill('C4')
+  await bed.press('Enter')
+  await expect(page.getByText(`Cama actualizada: ${name}`)).toBeVisible()
+
+  await row.getByLabel(`Teléfono de ${name}`).selectOption('in_custody')
+  await expect(page.getByText(`Teléfono actualizado: ${name}`)).toBeVisible()
+
+  // Opening the list again reads the database, so this proves both values were saved.
+  const reloaded = await residentRow(page, firstName)
+  await expect(reloaded.getByLabel(`Cama de ${name}`)).toHaveValue('C4')
+  await expect(reloaded.getByLabel(`Teléfono de ${name}`)).toHaveValue('in_custody')
+})

@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { isApiError } from '@/api/errors'
 import { endOuting, startOuting } from '@/api/outings'
-import { checkOut } from '@/api/stays'
+import { checkOut, updateStay } from '@/api/stays'
 import PageHeader from '@/components/common/PageHeader.vue'
 import OutingStartDialog from '@/components/outings/OutingStartDialog.vue'
 import HeadcountBar from '@/components/residents/HeadcountBar.vue'
@@ -12,6 +12,7 @@ import CheckOutDialog from '@/components/stays/CheckOutDialog.vue'
 import { useConfirm } from '@/composables/useConfirm'
 import { useNotify } from '@/composables/useNotify'
 import { type ResidentRow, useResidents } from '@/composables/useResidents'
+import type { PhoneStatus } from '@/types/domain'
 
 const { t } = useI18n()
 const notify = useNotify()
@@ -107,6 +108,27 @@ async function confirmCheckOut(exitDate: string): Promise<void> {
     notify.success('stays.checkOut.done', { name: row.full_name })
   })
 }
+
+// In-cell edits save against the stay's updated_at from the last load, so a stay
+// that someone else changed meanwhile fails with stale_record and the reload
+// shows their value.
+async function saveBed(stayId: string, bed: string): Promise<void> {
+  const row = findRow(stayId)
+  if (!row) return
+  await runRowAction(row, async () => {
+    await updateStay(row.stay_id, row.stay_updated_at, { bed })
+    notify.success('residents.inline.bedSaved', { name: row.full_name })
+  })
+}
+
+async function savePhoneStatus(stayId: string, status: PhoneStatus): Promise<void> {
+  const row = findRow(stayId)
+  if (!row) return
+  await runRowAction(row, async () => {
+    await updateStay(row.stay_id, row.stay_updated_at, { phone_status: status })
+    notify.success('residents.inline.phoneSaved', { name: row.full_name })
+  })
+}
 </script>
 
 <template>
@@ -136,6 +158,8 @@ async function confirmCheckOut(exitDate: string): Promise<void> {
       @start-outing="openOuting"
       @end-outing="recordReturn"
       @check-out="openCheckOut"
+      @change-bed="saveBed"
+      @change-phone-status="savePhoneStatus"
     />
     <OutingStartDialog
       :name="outingTarget?.row.full_name ?? null"

@@ -9,17 +9,49 @@ import {
   Sort,
 } from '@syncfusion/ej2-vue-grids'
 import PersonThumb from '@/components/people/PersonThumb.vue'
+import { PHONE_STATUSES } from '@/components/stays/stayFormModel'
 import type { ResidentRow } from '@/composables/useResidents'
+import { cleanText } from '@/lib/text'
+import type { PhoneStatus } from '@/types/domain'
 
 defineProps<{ rows: ResidentRow[] }>()
 const emit = defineEmits<{
   'start-outing': [stayId: string]
   'end-outing': [stayId: string]
   'check-out': [stayId: string]
+  'change-bed': [stayId: string, bed: string]
+  'change-phone-status': [stayId: string, status: PhoneStatus]
 }>()
 
 const { t } = useI18n()
 provide('grid', [Sort, Filter])
+
+// The bed and phone status are edited in their cells. A change is emitted once the
+// value differs from the row; the view saves it and reloads, so the row then shows
+// what was saved. Key presses stay inside the fields: the grid otherwise takes the
+// arrows, Enter and Escape for its own cell navigation.
+function commitBed(row: ResidentRow, event: Event): void {
+  const input = event.target as HTMLInputElement
+  const bed = cleanText(input.value) ?? ''
+  if (bed !== row.bed) emit('change-bed', row.stay_id, bed)
+}
+
+function onBedKeydown(row: ResidentRow, event: KeyboardEvent): void {
+  event.stopPropagation()
+  const input = event.target as HTMLInputElement
+  if (event.key === 'Enter') {
+    commitBed(row, event)
+    input.blur()
+  } else if (event.key === 'Escape') {
+    input.value = row.bed
+    input.blur()
+  }
+}
+
+function commitPhoneStatus(row: ResidentRow, event: Event): void {
+  const status = (event.target as HTMLSelectElement).value as PhoneStatus
+  if (status !== row.phone_status) emit('change-phone-status', row.stay_id, status)
+}
 
 // Phones get Syncfusion's adaptive layout, which stacks each row vertically.
 const narrowQuery = window.matchMedia('(max-width: 767.98px)')
@@ -98,7 +130,20 @@ const filterSettings = { type: 'CheckBox' }
           >
         </template>
       </e-column>
-      <e-column field="bed" :header-text="t('residents.columns.bed')" width="80" />
+      <e-column field="bed" :header-text="t('residents.columns.bed')" width="75" :template="'bed'">
+        <template #bed="{ data }">
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            :value="data.bed"
+            :aria-label="t('residents.inline.bedLabel', { name: data.full_name })"
+            :disabled="data.busy"
+            autocomplete="off"
+            @keydown="onBedKeydown(data, $event)"
+            @change="commitBed(data, $event)"
+          />
+        </template>
+      </e-column>
       <e-column
         field="entry_date"
         :header-text="t('residents.columns.entryDate')"
@@ -139,7 +184,27 @@ const filterSettings = { type: 'CheckBox' }
       >
         <template #outsince="{ data }">{{ data.out_since_label }}</template>
       </e-column>
-      <e-column field="phone_status_label" :header-text="t('residents.columns.phone')" width="130" />
+      <e-column
+        field="phone_status_label"
+        :header-text="t('residents.columns.phone')"
+        width="120"
+        :template="'phone'"
+      >
+        <template #phone="{ data }">
+          <select
+            class="form-select form-select-sm"
+            :value="data.phone_status"
+            :aria-label="t('residents.inline.phoneLabel', { name: data.full_name })"
+            :disabled="data.busy"
+            @keydown.stop
+            @change="commitPhoneStatus(data, $event)"
+          >
+            <option v-for="status in PHONE_STATUSES" :key="status" :value="status">
+              {{ t(`phoneStatus.${status}`) }}
+            </option>
+          </select>
+        </template>
+      </e-column>
       <e-column
         :header-text="t('residents.columns.actions')"
         width="250"
