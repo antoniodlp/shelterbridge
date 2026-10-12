@@ -287,6 +287,7 @@
     "staleMessage": "Otra persona guardó cambios mientras editabas. ¿Quieres recargar el registro? Se perderán los cambios que no guardaste.",
     "keepEditing": "Seguir editando",
     "details": {
+      "name": "Nombre",
       "birthDate": "Fecha de nacimiento",
       "age": "Edad",
       "gender": "Género",

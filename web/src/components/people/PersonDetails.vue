@@ -18,6 +18,8 @@ const age = computed(() => formatAge(ageOn(props.person.birth_date, today())))
 
 <template>
   <dl class="row mb-0" data-testid="person-details">
+    <dt class="col-sm-4">{{ t('person.details.name') }}</dt>
+    <dd class="col-sm-8">{{ person.first_name }} {{ person.last_name }}</dd>
     <dt class="col-sm-4">{{ t('person.details.birthDate') }}</dt>
     <dd class="col-sm-8">{{ formatDate(person.birth_date) || unknown }}</dd>
     <dt class="col-sm-4">{{ t('person.details.age') }}</dt>

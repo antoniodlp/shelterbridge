@@ -341,7 +341,16 @@ async function reopenStay(stay: Stay): Promise<void> {
 
 <template>
   <div>
-    <PageHeader title-key="common.personRecord" />
+    <PageHeader :title-key="name">
+      <template #actions>
+        <p class="mb-0" data-testid="stay-status">
+          <span v-if="openStay" class="badge text-bg-success">{{
+            t('person.status.staying', { date: formatDate(openStay.entry_date) })
+          }}</span>
+          <span v-else class="badge text-bg-secondary">{{ t('person.status.notStaying') }}</span>
+        </p>
+      </template>
+    </PageHeader>
     <div v-if="notFound" class="alert alert-warning" role="alert">{{ t('person.notFound') }}</div>
     <p v-else-if="!person" class="text-body-secondary">{{ t('common.loading') }}</p>
     <template v-else>
@@ -362,17 +371,6 @@ async function reopenStay(stay: Stay): Promise<void> {
             @updated="reloadAfterPhoto"
             @uploading="photoUploading = $event"
           />
-          <section class="card mb-4">
-            <div class="card-body">
-              <h2 class="h4" data-testid="person-name">{{ name }}</h2>
-              <p class="mb-0" data-testid="stay-status">
-                <span v-if="openStay" class="badge text-bg-success">{{
-                  t('person.status.staying', { date: formatDate(openStay.entry_date) })
-                }}</span>
-                <span v-else class="badge text-bg-secondary">{{ t('person.status.notStaying') }}</span>
-              </p>
-            </div>
-          </section>
         </div>
         <div class="col-lg-8">
           <section class="card mb-4">
