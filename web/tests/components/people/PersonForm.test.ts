@@ -49,10 +49,11 @@ describe('PersonForm', () => {
     expect(section.find('label').text()).toBe('Persona responsable')
   })
 
-  it('marks an estimated age with a tilde', async () => {
-    const model = reactive({ ...emptyPerson(), birth_date: '1996-04-12', birth_date_estimated: true })
+  it('does not ask whether the birth date is approximate', async () => {
+    const model = reactive({ ...emptyPerson(), birth_date: '1996-04-12' })
     const { wrapper } = await mountForm(model)
-    expect(wrapper.find('[data-testid="person-age"]').text()).toContain('~')
+    expect(wrapper.find('#person-birth-estimated').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('Fecha aproximada')
   })
 
   it('shows field errors', async () => {

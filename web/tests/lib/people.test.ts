@@ -12,13 +12,12 @@ describe('fullName', () => {
 })
 
 describe('formatAge', () => {
-  it('marks an estimated age with a tilde', () => {
-    expect(formatAge(25, true)).toBe('~25')
-    expect(formatAge(25, false)).toBe('25')
+  it('shows the age as a plain number', () => {
+    expect(formatAge(25)).toBe('25')
   })
 
   it('is empty when the age is unknown', () => {
-    expect(formatAge(null, false)).toBe('')
+    expect(formatAge(null)).toBe('')
   })
 })
 

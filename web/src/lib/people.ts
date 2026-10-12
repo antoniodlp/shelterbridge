@@ -8,13 +8,10 @@ export function fullName(
     .join(' ')
 }
 
-/** "25", or "~25" when the birth date is an estimate. Empty when the age is unknown. */
-export function formatAge(
-  age: number | null | undefined,
-  estimated: boolean | null | undefined,
-): string {
+/** "25", or empty when the age is unknown. */
+export function formatAge(age: number | null | undefined): string {
   if (age === null || age === undefined) return ''
-  return estimated ? `~${age}` : String(age)
+  return String(age)
 }
 
 /** Lowercase, without accents and with single spaces, for matching on the client. */

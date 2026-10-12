@@ -258,7 +258,6 @@
       "firstName": "Nombre(s)",
       "lastName": "Apellidos",
       "birthDate": "Fecha de nacimiento",
-      "birthDateEstimated": "Fecha aproximada",
       "age": "Edad: {age}",
       "gender": "Género",
       "genderPlaceholder": "Selecciona",

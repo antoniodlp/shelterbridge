@@ -14,7 +14,6 @@ function candidate(n: number, firstName: string): DuplicateCandidate {
     first_name: firstName,
     last_name: 'Pérez',
     birth_date: null,
-    birth_date_estimated: false,
     country_code: 'HN',
     photo_path: null,
     score: 0.8,

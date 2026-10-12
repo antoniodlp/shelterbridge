@@ -89,7 +89,7 @@ export function useResidents() {
       photo_path: resident.photo_path,
       thumb_url: thumbs.thumbUrl(resident.photo_path),
       age: resident.age,
-      age_label: formatAge(resident.age, resident.birth_date_estimated),
+      age_label: formatAge(resident.age),
       carer_name: carer ? fullName(carer.first_name, carer.last_name) : '',
       bed: resident.bed ?? '',
       entry_date: resident.entry_date ?? '',

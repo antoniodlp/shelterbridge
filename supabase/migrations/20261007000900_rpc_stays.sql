@@ -60,12 +60,11 @@ declare
 begin
   perform app.require_role();
   insert into public.people (
-    first_name, last_name, birth_date, birth_date_estimated, gender_code, country_code, region, carer_id)
+    first_name, last_name, birth_date, gender_code, country_code, region, carer_id)
   values (
     p_person ->> 'first_name',
     p_person ->> 'last_name',
     (p_person ->> 'birth_date')::date,
-    coalesce((p_person ->> 'birth_date_estimated')::boolean, false),
     p_person ->> 'gender_code',
     p_person ->> 'country_code',
     p_person ->> 'region',

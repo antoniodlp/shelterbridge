@@ -35,7 +35,7 @@ watch(
 )
 
 function ageLabel(candidate: DuplicateCandidate): string {
-  const age = formatAge(ageOn(candidate.birth_date, today()), candidate.birth_date_estimated)
+  const age = formatAge(ageOn(candidate.birth_date, today()))
   return age ? t('registration.duplicates.age', { age }) : ''
 }
 

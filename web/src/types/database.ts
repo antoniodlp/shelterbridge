@@ -121,14 +121,14 @@ isOneToOne: false
                   ]
                 },"people": {
                   Row: {
-                    "birth_date": string | null,"birth_date_estimated": boolean,"carer_id": string | null,"country_code": string | null,"created_at": string,"created_by": string | null,"first_name": string,"gender_code": string | null,"id": string,"last_name": string | null,"merged_into_id": string | null,"photo_path": string | null,"region": string | null,"search_name": string | null,"source": string,"updated_at": string,"updated_by": string | null
+                    "birth_date": string | null,"carer_id": string | null,"country_code": string | null,"created_at": string,"created_by": string | null,"first_name": string,"gender_code": string | null,"id": string,"last_name": string | null,"merged_into_id": string | null,"photo_path": string | null,"region": string | null,"search_name": string | null,"source": string,"updated_at": string,"updated_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "birth_date"?: string | null,"birth_date_estimated"?: boolean,"carer_id"?: string | null,"country_code"?: string | null,"created_at"?: string,"created_by"?: string | null,"first_name": string,"gender_code"?: string | null,"id"?: string,"last_name"?: string | null,"merged_into_id"?: string | null,"photo_path"?: string | null,"region"?: string | null,"search_name"?: never,"source"?: string,"updated_at"?: string,"updated_by"?: string | null
+                    "birth_date"?: string | null,"carer_id"?: string | null,"country_code"?: string | null,"created_at"?: string,"created_by"?: string | null,"first_name": string,"gender_code"?: string | null,"id"?: string,"last_name"?: string | null,"merged_into_id"?: string | null,"photo_path"?: string | null,"region"?: string | null,"search_name"?: never,"source"?: string,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Update: {
-                    "birth_date"?: string | null,"birth_date_estimated"?: boolean,"carer_id"?: string | null,"country_code"?: string | null,"created_at"?: string,"created_by"?: string | null,"first_name"?: string,"gender_code"?: string | null,"id"?: string,"last_name"?: string | null,"merged_into_id"?: string | null,"photo_path"?: string | null,"region"?: string | null,"search_name"?: never,"source"?: string,"updated_at"?: string,"updated_by"?: string | null
+                    "birth_date"?: string | null,"carer_id"?: string | null,"country_code"?: string | null,"created_at"?: string,"created_by"?: string | null,"first_name"?: string,"gender_code"?: string | null,"id"?: string,"last_name"?: string | null,"merged_into_id"?: string | null,"photo_path"?: string | null,"region"?: string | null,"search_name"?: never,"source"?: string,"updated_at"?: string,"updated_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -220,7 +220,7 @@ isOneToOne: false
           Views: {
             "current_residents": {
                   Row: {
-                    "age": number | null,"bed": string | null,"birth_date": string | null,"birth_date_estimated": boolean | null,"carer_id": string | null,"case_type_code": string | null,"country_code": string | null,"days_in_shelter": number | null,"entry_date": string | null,"first_name": string | null,"gender_code": string | null,"is_minor": boolean | null,"is_unaccompanied_minor": boolean | null,"last_name": string | null,"notes": string | null,"open_outing_id": string | null,"out_since": string | null,"outings_today": number | null,"person_id": string | null,"phone_status": string | null,"photo_path": string | null,"presence": string | null,"region": string | null,"stay_id": string | null,"stay_updated_at": string | null
+                    "age": number | null,"bed": string | null,"birth_date": string | null,"carer_id": string | null,"case_type_code": string | null,"country_code": string | null,"days_in_shelter": number | null,"entry_date": string | null,"first_name": string | null,"gender_code": string | null,"is_minor": boolean | null,"is_unaccompanied_minor": boolean | null,"last_name": string | null,"notes": string | null,"open_outing_id": string | null,"out_since": string | null,"outings_today": number | null,"person_id": string | null,"phone_status": string | null,"photo_path": string | null,"presence": string | null,"region": string | null,"stay_id": string | null,"stay_updated_at": string | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -270,7 +270,7 @@ isOneToOne: false
                            },
 "find_possible_duplicates":
 { Args: { "p_birth_date"?: string,"p_country_code"?: string,"p_first_name": string,"p_last_name"?: string }; Returns: {
-              "birth_date": string,"birth_date_estimated": boolean,"country_code": string,"first_name": string,"last_entry_date": string,"last_exit_date": string,"last_name": string,"person_id": string,"photo_path": string,"score": number
+              "birth_date": string,"country_code": string,"first_name": string,"last_entry_date": string,"last_exit_date": string,"last_name": string,"person_id": string,"photo_path": string,"score": number
             }[]
                            },
 "hook_before_user_created":
@@ -284,7 +284,7 @@ isOneToOne: false
                            },
 "search_people":
 { Args: { "p_limit"?: number,"p_query": string }; Returns: {
-              "birth_date": string,"birth_date_estimated": boolean,"country_code": string,"first_name": string,"has_open_stay": boolean,"last_entry_date": string,"last_exit_date": string,"last_name": string,"person_id": string,"photo_path": string,"score": number
+              "birth_date": string,"country_code": string,"first_name": string,"has_open_stay": boolean,"last_entry_date": string,"last_exit_date": string,"last_name": string,"person_id": string,"photo_path": string,"score": number
             }[]
                            },
 "start_outing":

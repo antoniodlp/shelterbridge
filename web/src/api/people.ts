@@ -10,7 +10,6 @@ export interface NewPersonInput {
   first_name: string
   last_name?: string | null
   birth_date?: string | null
-  birth_date_estimated?: boolean
   gender_code?: string | null
   country_code?: string | null
   region?: string | null
@@ -46,7 +45,6 @@ export interface PersonSearchResult {
   first_name: string
   last_name: string | null
   birth_date: string | null
-  birth_date_estimated: boolean
   country_code: string | null
   photo_path: string | null
   score: number

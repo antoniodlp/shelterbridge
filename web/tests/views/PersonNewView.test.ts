@@ -57,7 +57,6 @@ describe('PersonNewView', () => {
         first_name: 'Rosa Elena',
         last_name: 'Pérez Lara',
         birth_date: null,
-        birth_date_estimated: false,
         gender_code: null,
         country_code: null,
         region: '',

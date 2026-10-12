@@ -13,7 +13,6 @@ select
   p.country_code,
   p.region,
   p.birth_date,
-  p.birth_date_estimated,
   app.age_on(p.birth_date, app.today())        as age,
   p.carer_id,
   s.bed,

@@ -10,7 +10,6 @@ returns table (
   first_name text,
   last_name text,
   birth_date date,
-  birth_date_estimated boolean,
   country_code text,
   photo_path text,
   score real,
@@ -37,7 +36,6 @@ begin
       p.first_name,
       p.last_name,
       p.birth_date,
-      p.birth_date_estimated,
       p.country_code,
       p.photo_path,
       greatest(
@@ -61,7 +59,6 @@ begin
     s.first_name,
     s.last_name,
     s.birth_date,
-    s.birth_date_estimated,
     s.country_code,
     s.photo_path,
     (s.name_sim + s.dob_bonus + s.country_bonus)::real,
@@ -77,7 +74,7 @@ begin
   ) ls on true
   where s.name_sim >= 0.30
      or (s.name_sim >= 0.20 and s.dob_bonus >= 0.20)
-  order by 8 desc
+  order by 7 desc
   limit 5;
 end;
 $$;
@@ -88,7 +85,6 @@ returns table (
   first_name text,
   last_name text,
   birth_date date,
-  birth_date_estimated boolean,
   country_code text,
   photo_path text,
   score real,
@@ -116,7 +112,6 @@ begin
     p.first_name,
     p.last_name,
     p.birth_date,
-    p.birth_date_estimated,
     p.country_code,
     p.photo_path,
     extensions.word_similarity(v_q, p.search_name)::real,
@@ -133,7 +128,7 @@ begin
   ) ls on true
   where p.merged_into_id is null
     and (p.search_name like v_like or extensions.word_similarity(v_q, p.search_name) >= 0.5)
-  order by (p.search_name like v_like) desc, 8 desc, p.search_name
+  order by (p.search_name like v_like) desc, 7 desc, p.search_name
   limit least(greatest(coalesce(p_limit, 50), 1), 200);
 end;
 $$;

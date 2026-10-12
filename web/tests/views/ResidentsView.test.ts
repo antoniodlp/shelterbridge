@@ -27,7 +27,6 @@ const residents = [
     stay_id: uuid(101),
     person_id: uuid(1),
     photo_path: `${uuid(1)}.jpg`,
-    birth_date_estimated: true,
   }),
   makeResident({
     stay_id: uuid(102),
@@ -143,10 +142,10 @@ describe('ResidentsView', () => {
     expect(cells).toContain('Pérez Lara')
   })
 
-  it('shows the age in red only for minors, keeping the estimate mark', async () => {
+  it('shows the age in red only for minors', async () => {
     const { wrapper } = await mountLoaded()
     const rosaAge = rowFor(wrapper, 'Rosa Elena').find('[data-testid="age"]')
-    expect(rosaAge.text()).toBe('~30')
+    expect(rosaAge.text()).toBe('30')
     expect(rosaAge.classes()).not.toContain('text-danger')
 
     const luciaAge = rowFor(wrapper, 'Lucía').find('[data-testid="age"]')

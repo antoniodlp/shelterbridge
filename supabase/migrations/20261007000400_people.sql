@@ -42,7 +42,6 @@ create table public.people (
   first_name           text not null check (length(first_name) > 0),
   last_name            text,
   birth_date           date check (birth_date >= date '1900-01-01'),
-  birth_date_estimated boolean not null default false,
   gender_code          text references public.genders (code),
   country_code         text references public.countries (code),
   region               text,

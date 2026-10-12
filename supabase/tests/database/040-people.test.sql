@@ -1,8 +1,10 @@
 begin;
-select plan(21);
+select plan(22);
 
 select tests.create_user('t-volunteer@example.test', 'volunteer');
 select tests.create_user('t-norole@example.test');
+
+select hasnt_column('public', 'people', 'birth_date_estimated', 'people has no approximate birth date flag');
 
 insert into public.people (id, first_name, last_name)
 values ('00000000-0000-4000-8000-000000000101', '  José ', ' Ñúñez   Quiñónez ');

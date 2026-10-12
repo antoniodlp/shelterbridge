@@ -1,5 +1,5 @@
 begin;
-select plan(18);
+select plan(19);
 
 select tests.create_user('t-volunteer@example.test', 'volunteer');
 select tests.create_user('t-norole@example.test');
@@ -14,8 +14,10 @@ insert into public.people (id, first_name, last_name, birth_date, country_code) 
   ('00000000-0000-4000-8000-000000000807', 'X', null, null, 'HN');
 update public.people set merged_into_id = '00000000-0000-4000-8000-000000000801'
 where id = '00000000-0000-4000-8000-000000000805';
-insert into public.stays (person_id, entry_date)
-values ('00000000-0000-4000-8000-000000000801', app.today() - 1);
+insert into public.stays (person_id, entry_date, exit_date) values
+  ('00000000-0000-4000-8000-000000000801', app.today() - 1, null),
+  ('00000000-0000-4000-8000-000000000802', app.today() - 30, app.today() - 20),
+  ('00000000-0000-4000-8000-000000000803', app.today() - 10, app.today() - 5);
 
 select tests.authenticate_as('t-volunteer@example.test');
 
@@ -38,6 +40,10 @@ select is(
   (select person_id from public.find_possible_duplicates('Wenceslao', 'Ybarra', date '1985-01-01') limit 1),
   '00000000-0000-4000-8000-000000000802'::uuid,
   'an exact birth date ranks first');
+select is(
+  (select person_id from public.find_possible_duplicates('Wenceslao', 'Ybarra', date '1985-01-01') limit 1),
+  '00000000-0000-4000-8000-000000000802'::uuid,
+  'candidates rank by score, not by their last stay');
 select is(
   (select count(*)::int from public.find_possible_duplicates('Xiomara', 'Zuluaga Ñáñez')
    where person_id = '00000000-0000-4000-8000-000000000805'),

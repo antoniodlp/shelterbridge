@@ -62,11 +62,10 @@ describe('formToPersonInput', () => {
     expect(formToPersonInput({ ...emptyPerson(), first_name: 'Ana', carer_id: uuid(1) }, today).carer_id).toBeNull()
   })
 
-  it('clears the estimated flag when there is no birth date', () => {
-    expect(
-      formToPersonInput({ ...emptyPerson(), first_name: 'Ana', birth_date_estimated: true }, today)
-        .birth_date_estimated,
-    ).toBe(false)
+  it('sends no approximate birth date flag', () => {
+    expect(formToPersonInput({ ...emptyPerson(), first_name: 'Ana' }, today)).not.toHaveProperty(
+      'birth_date_estimated',
+    )
   })
 })
 

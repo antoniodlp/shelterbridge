@@ -42,7 +42,7 @@ async function search(): Promise<void> {
 }
 
 function ageLabel(row: PersonSearchResult): string {
-  return formatAge(ageOn(row.birth_date, today()), row.birth_date_estimated)
+  return formatAge(ageOn(row.birth_date, today()))
 }
 
 function lastStay(row: PersonSearchResult): string {

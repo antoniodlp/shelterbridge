@@ -222,7 +222,6 @@ create table <catalog> (
 | `first_name` | text not null | |
 | `last_name` | text | nullable, because some people have a single name |
 | `birth_date` | date | nullable (unknown) |
-| `birth_date_estimated` | bool not null default false | shown as "~25" |
 | `gender_code` | text → `genders` | nullable |
 | `country_code` | text → `countries` | nullable |
 | `region` | text | department/state, free text |
@@ -312,7 +311,7 @@ Defined `with (security_invoker = true)` so that RLS applies. It has one row per
 | Column | Derivation |
 |---|---|
 | `stay_id`, `person_id`, names, `photo_path`, `gender_code`, `country_code`, `region`, `bed`, `entry_date`, `case_type_code`, `phone_status`, `carer_id` | direct |
-| `age`, `birth_date_estimated` | from `birth_date` |
+| `age` | from `birth_date` |
 | `days_in_shelter` | `app.today() - entry_date` |
 | `presence` | `'outside'` if the stay has an open outing, else `'inside'` |
 | `out_since`, `open_outing_id` | from the open outing |
@@ -328,7 +327,7 @@ All RPCs are `security invoker`, so RLS applies. They raise business errors with
 
 | Function | Who | Behavior | Errors |
 |---|---|---|---|
-| `find_possible_duplicates(first_name, last_name, birth_date, country_code)` | any role | Returns up to 5 non-merged candidates with score, photo path, birth date (and whether it is estimated), country and last stay. The web app computes the age from the birth date and the shelter's today. See §6.1 | none |
+| `find_possible_duplicates(first_name, last_name, birth_date, country_code)` | any role | Returns up to 5 non-merged candidates with score, photo path, birth date, country and last stay. The web app computes the age from the birth date and the shelter's today. See §6.1 | none |
 | `search_people(q, limit = 50)` | any role | Trigram plus prefix search over `search_name`. Non-merged only. Returns the last stay summary | none |
 | `register_person_and_check_in(person jsonb, stay jsonb)` | any role | Inserts the person and an open stay in one transaction. Returns ids | `validation` |
 | `check_in(person_id, stay jsonb)` | any role | Opens a new stay for an existing person | `not_found`, `already_checked_in`, `overlapping_stays` |
@@ -450,7 +449,7 @@ If the newest stay was checked out today by mistake, any role can reopen it from
 ### 9.4 Daily operations (`/residents`)
 
 - **Headcount bar:** total residents, inside, outside, minors, and unaccompanied minors.
-- **Grid columns:** thumbnail, first name, last name, age (with `~` when estimated, in red for minors), carer ("Acompañamiento": the carer's name when the carer is staying too, plus the unaccompanied-minor badge), bed, entry date, days in shelter, presence badge, out since, phone status, and actions. Filtering, sorting and quick search are client-side.
+- **Grid columns:** thumbnail, first name, last name, age (in red for minors), carer ("Acompañamiento": the carer's name when the carer is staying too, plus the unaccompanied-minor badge), bed, entry date, days in shelter, presence badge, out since, phone status, and actions. Filtering, sorting and quick search are client-side.
 - **Row actions:**
   - **Salida / Regreso** (outing / return) toggles according to presence.
     - Starting an outing when `outings_today ≥ 1` shows a confirmation ("Ya salió hoy, ¿registrar como excepción?"), then calls `start_outing` with `confirm_exception = true`.

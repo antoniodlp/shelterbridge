@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { DuplicateCandidate } from '@/api/people'
 import DuplicatePanel from '@/components/people/DuplicatePanel.vue'
+import { ageOn, todayIn } from '@/lib/shelterTime'
 import { uuid } from '../../fixtures/data'
 import { mountWithApp } from '../../utils/mountWithApp'
 
@@ -16,7 +17,6 @@ const returning: DuplicateCandidate = {
   first_name: 'Rosa Elena',
   last_name: 'Pérez Lara',
   birth_date: '1996-04-12',
-  birth_date_estimated: true,
   country_code: 'HN',
   photo_path: null,
   score: 0.92,
@@ -33,11 +33,11 @@ afterEach(() => {
 })
 
 describe('DuplicatePanel', () => {
-  it('shows each candidate with name, estimated age, country and last stay', async () => {
+  it('shows each candidate with name, age, country and last stay', async () => {
     const { wrapper } = await mountPanel([returning])
     const item = wrapper.find('[data-testid="duplicate-candidate"]')
     expect(item.text()).toContain('Rosa Elena Pérez Lara')
-    expect(item.text()).toContain('~')
+    expect(item.text()).toContain(`${ageOn('1996-04-12', todayIn('America/Mexico_City'))} años`)
     expect(item.text()).toContain('Honduras')
     expect(item.text()).toContain('Última estancia: 01/08/2026 a 15/08/2026')
   })

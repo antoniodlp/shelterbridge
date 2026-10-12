@@ -51,16 +51,16 @@ begin
   end loop;
 end $$;
 
-insert into public.people (id, first_name, last_name, birth_date, birth_date_estimated, gender_code, country_code, region) values
-  ('b0000000-0000-4000-8000-000000000001', 'María Fernanda', 'López Reyes', date '1994-05-12', false, 'female', 'HN', 'Cortés'),
-  ('b0000000-0000-4000-8000-000000000003', 'Carlos Alberto', 'Mejía', date '1988-11-30', false, 'male', 'HN', 'Francisco Morazán'),
-  ('b0000000-0000-4000-8000-000000000004', 'Kevin Josué', 'Ramírez', (current_date - interval '17 years')::date, false, 'male', 'GT', 'Quetzaltenango'),
-  ('b0000000-0000-4000-8000-000000000005', 'Yulimar', 'Castillo', date '1999-07-21', false, 'female', 'VE', 'Zulia'),
-  ('b0000000-0000-4000-8000-000000000006', 'Jean Baptiste', 'Pierre', date '1990-01-09', false, 'male', 'HT', null),
-  ('b0000000-0000-4000-8000-000000000007', 'Ana Gabriela', 'Torres', date '1985-04-02', true, 'trans_female', 'SV', 'San Salvador'),
-  ('b0000000-0000-4000-8000-000000000008', 'José Luis', 'Hernández', date '1979-03-11', false, 'male', 'MX', 'Michoacán'),
-  ('b0000000-0000-4000-8000-000000000009', 'Wilmer', null, null, false, 'male', 'NI', null),
-  ('b0000000-0000-4000-8000-000000000010', 'Jose Luis', 'Hernandez', date '1979-11-03', false, 'male', 'MX', null);
+insert into public.people (id, first_name, last_name, birth_date, gender_code, country_code, region) values
+  ('b0000000-0000-4000-8000-000000000001', 'María Fernanda', 'López Reyes', date '1994-05-12', 'female', 'HN', 'Cortés'),
+  ('b0000000-0000-4000-8000-000000000003', 'Carlos Alberto', 'Mejía', date '1988-11-30', 'male', 'HN', 'Francisco Morazán'),
+  ('b0000000-0000-4000-8000-000000000004', 'Kevin Josué', 'Ramírez', (current_date - interval '17 years')::date, 'male', 'GT', 'Quetzaltenango'),
+  ('b0000000-0000-4000-8000-000000000005', 'Yulimar', 'Castillo', date '1999-07-21', 'female', 'VE', 'Zulia'),
+  ('b0000000-0000-4000-8000-000000000006', 'Jean Baptiste', 'Pierre', date '1990-01-09', 'male', 'HT', null),
+  ('b0000000-0000-4000-8000-000000000007', 'Ana Gabriela', 'Torres', date '1985-04-02', 'trans_female', 'SV', 'San Salvador'),
+  ('b0000000-0000-4000-8000-000000000008', 'José Luis', 'Hernández', date '1979-03-11', 'male', 'MX', 'Michoacán'),
+  ('b0000000-0000-4000-8000-000000000009', 'Wilmer', null, null, 'male', 'NI', null),
+  ('b0000000-0000-4000-8000-000000000010', 'Jose Luis', 'Hernandez', date '1979-11-03', 'male', 'MX', null);
 
 insert into public.people (id, first_name, last_name, birth_date, gender_code, country_code, region, carer_id) values
   ('b0000000-0000-4000-8000-000000000002', 'Daniela', 'López', (current_date - interval '9 years')::date,

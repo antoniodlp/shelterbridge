@@ -13,9 +13,7 @@ const { t } = useI18n()
 const { formatDate, today } = useShelterTime()
 const catalogs = useCatalogsStore()
 const unknown = computed(() => t('person.details.unknown'))
-const age = computed(() =>
-  formatAge(ageOn(props.person.birth_date, today()), props.person.birth_date_estimated),
-)
+const age = computed(() => formatAge(ageOn(props.person.birth_date, today())))
 </script>
 
 <template>

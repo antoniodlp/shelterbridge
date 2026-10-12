@@ -8,7 +8,6 @@ export interface PersonFormValue {
   first_name: string
   last_name: string
   birth_date: string | null
-  birth_date_estimated: boolean
   gender_code: string | null
   country_code: string | null
   region: string
@@ -23,7 +22,6 @@ export function emptyPerson(): PersonFormValue {
     first_name: '',
     last_name: '',
     birth_date: null,
-    birth_date_estimated: false,
     gender_code: null,
     country_code: null,
     region: '',
@@ -36,7 +34,6 @@ export function personToForm(person: Person): PersonFormValue {
     first_name: person.first_name,
     last_name: person.last_name ?? '',
     birth_date: person.birth_date,
-    birth_date_estimated: person.birth_date_estimated,
     gender_code: person.gender_code,
     country_code: person.country_code,
     region: person.region ?? '',
@@ -55,7 +52,6 @@ export function formToPersonInput(value: PersonFormValue, today: string): NewPer
     first_name: value.first_name,
     last_name: value.last_name,
     birth_date: value.birth_date,
-    birth_date_estimated: value.birth_date !== null && value.birth_date_estimated,
     gender_code: value.gender_code,
     country_code: value.country_code,
     region: value.region,

@@ -71,7 +71,6 @@ beforeEach(() => {
       first_name: person.first_name,
       last_name: person.last_name,
       birth_date: person.birth_date,
-      birth_date_estimated: false,
       country_code: person.country_code,
       photo_path: null,
       score: 0.9,

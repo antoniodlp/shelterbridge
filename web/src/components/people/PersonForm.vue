@@ -53,20 +53,8 @@ const minor = computed(() => isMinorOn(model.value.birth_date, todayDate))
         :invalid="!!errors.birth_date"
       />
       <div v-if="errors.birth_date" class="invalid-feedback d-block">{{ t(errors.birth_date) }}</div>
-      <div class="d-flex flex-wrap align-items-center gap-3 mt-2">
-        <div class="form-check mb-0">
-          <input
-            id="person-birth-estimated"
-            v-model="model.birth_date_estimated"
-            class="form-check-input"
-            type="checkbox"
-            :disabled="!model.birth_date"
-          />
-          <label for="person-birth-estimated" class="form-check-label">{{ t('person.form.birthDateEstimated') }}</label>
-        </div>
-        <span v-if="age !== null" class="small text-body-secondary" data-testid="person-age">{{
-          t('person.form.age', { age: formatAge(age, model.birth_date_estimated) })
-        }}</span>
+      <div v-if="age !== null" class="small text-body-secondary mt-2" data-testid="person-age">
+        {{ t('person.form.age', { age: formatAge(age) }) }}
       </div>
     </div>
     <div class="col-md-6">

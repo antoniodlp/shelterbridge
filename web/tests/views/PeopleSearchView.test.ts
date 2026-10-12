@@ -22,7 +22,6 @@ function result(overrides: Partial<PersonSearchResult>): PersonSearchResult {
     first_name: 'Rosa Elena',
     last_name: 'Pérez Lara',
     birth_date: '1996-04-12',
-    birth_date_estimated: false,
     country_code: 'HN',
     photo_path: null,
     score: 0.9,
