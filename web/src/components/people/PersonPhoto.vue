@@ -97,12 +97,14 @@ async function retry(): Promise<void> {
           {{ t('photos.retry') }}
         </button>
       </div>
-      <template v-if="!readonly">
-        <PhotoCapture v-if="capturing" id-prefix="record-photo" @captured="upload" />
-        <button v-else type="button" class="btn btn-sm btn-outline-primary" @click="capturing = true">
-          {{ photoPath ? t('photos.change') : t('photos.add') }}
-        </button>
-      </template>
+      <div>
+        <template v-if="!readonly">
+          <PhotoCapture v-if="capturing" id-prefix="record-photo" @captured="upload" />
+          <button v-else type="button" class="btn btn-sm btn-outline-primary" @click="capturing = true">
+            {{ photoPath ? t('photos.change') : t('photos.add') }}
+          </button>
+        </template>
+      </div>
     </div>
   </section>
 </template>

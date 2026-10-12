@@ -93,9 +93,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div>
     <video v-if="stream" ref="video" class="w-100 rounded mb-2 bg-dark" autoplay playsinline muted />
-    <div class="d-flex flex-wrap gap-2">
+    <div class="d-flex flex-wrap gap-2 justify-content-center">
       <button
         v-if="canUseCamera && !stream"
         type="button"
@@ -126,5 +125,4 @@ onBeforeUnmount(() => {
     </div>
     <p v-if="busy" class="small text-body-secondary mt-2 mb-0">{{ t('photos.processing') }}</p>
     <p v-if="problem" class="small text-danger mt-2 mb-0" role="alert">{{ t(problem) }}</p>
-  </div>
 </template>
