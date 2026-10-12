@@ -452,7 +452,7 @@ If the newest stay was checked out today by mistake, any role can reopen it from
 - **Grid columns:** thumbnail, first name, last name, age (in red for minors), carer ("Acompañamiento": the carer's name when the carer is staying too, plus the unaccompanied-minor badge), bed, entry date, days in shelter, presence badge, out since, phone status, and actions. Filtering, sorting and quick search are client-side.
 - **Row actions:**
   - **Salida / Regreso** (outing / return) toggles according to presence.
-    - Starting an outing when `outings_today ≥ 1` shows a confirmation ("Ya salió hoy, ¿registrar como excepción?"), then calls `start_outing` with `confirm_exception = true`.
+    - Starting an outing when `outings_today ≥ 1` first shows a confirmation ("Ya salió hoy, ¿registrar como excepción?"). Declining leaves everything as it was. Accepting opens the comment dialog, and the outing is then sent with `confirm_exception = true`.
     - The comment is optional.
   - **Egreso** (check-out) opens a dialog with the exit date (default today) and warnings:
     - `phone_status = 'in_custody'` shows "devolver el teléfono" (return the phone);

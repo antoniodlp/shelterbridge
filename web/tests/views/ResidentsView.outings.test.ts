@@ -133,33 +133,40 @@ describe('ResidentsView outings', () => {
       ])
     })
 
-    it('asks for the exception first and records the outing once, already confirmed', async () => {
+    it('asks for the exception before the dialog opens and records the outing once, already confirmed', async () => {
       vi.mocked(startOuting).mockResolvedValue(uuid(303))
-      confirm.mockResolvedValue(true)
+      let answer: (confirmed: boolean) => void = () => {}
+      confirm.mockReturnValue(
+        new Promise<boolean>((resolve) => {
+          answer = resolve
+        }),
+      )
       const w = await mountLoaded()
       await buttonIn(rowFor(w, 'Rosa Elena'), 'Salida').trigger('click')
-      await submitOutingDialog('Otra cita')
-      await vi.waitFor(() => expect(startOuting).toHaveBeenCalledTimes(1))
-      expect(confirm).toHaveBeenCalledTimes(1)
+      await flushPromises()
       expect(confirm).toHaveBeenCalledWith({
         titleKey: 'outings.exception.title',
         messageKey: 'errors.outing_exception_needs_confirmation',
         confirmKey: 'outings.exception.confirm',
       })
-      expect(confirm.mock.invocationCallOrder[0]).toBeLessThan(
-        vi.mocked(startOuting).mock.invocationCallOrder[0]!,
-      )
-      expect(startOuting).toHaveBeenCalledWith(uuid(101), 'Otra cita', true)
+      // The comment dialog waits for the answer.
+      expect(body().find('#outing-comment').exists()).toBe(false)
+
+      answer(true)
+      await submitOutingDialog('Otra cita')
+      await vi.waitFor(() => expect(startOuting).toHaveBeenCalledWith(uuid(101), 'Otra cita', true))
+      expect(startOuting).toHaveBeenCalledTimes(1)
+      expect(confirm).toHaveBeenCalledTimes(1)
       expect(notify.success).toHaveBeenCalledWith('outings.started', { name: 'Rosa Elena Pérez Lara' })
     })
 
-    it('records nothing when the exception is declined', async () => {
+    it('opens no dialog and records nothing when the exception is declined', async () => {
       confirm.mockResolvedValue(false)
       const w = await mountLoaded()
       await buttonIn(rowFor(w, 'Rosa Elena'), 'Salida').trigger('click')
-      await submitOutingDialog()
       await vi.waitFor(() => expect(confirm).toHaveBeenCalledTimes(1))
-      await vi.waitFor(() => expect(listCurrentResidents).toHaveBeenCalledTimes(2))
+      await flushPromises()
+      expect(body().find('#outing-comment').exists()).toBe(false)
       expect(startOuting).not.toHaveBeenCalled()
       expect(notify.success).not.toHaveBeenCalled()
       expect(notify.error).not.toHaveBeenCalled()

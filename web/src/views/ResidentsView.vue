@@ -18,7 +18,7 @@ const notify = useNotify()
 const { confirm } = useConfirm()
 const { rows, counts, loading, query, busyStayId, findRow, reload } = useResidents()
 
-const outingTarget = ref<ResidentRow | null>(null)
+const outingTarget = ref<{ row: ResidentRow; exceptionConfirmed: boolean } | null>(null)
 const checkOutTarget = ref<ResidentRow | null>(null)
 
 onMounted(reload)
@@ -48,27 +48,28 @@ async function runRowAction(row: ResidentRow, action: () => Promise<void>): Prom
   }
 }
 
-function openOuting(stayId: string): void {
-  outingTarget.value = findRow(stayId) ?? null
+// A person who already went out today needs the exception confirmed before the
+// comment dialog opens. Declining leaves everything as it was.
+async function openOuting(stayId: string): Promise<void> {
+  const row = findRow(stayId)
+  if (!row) return
+  const exceptionConfirmed = row.outings_today >= 1
+  if (exceptionConfirmed && !(await askForException())) return
+  outingTarget.value = { row, exceptionConfirmed }
 }
 
 async function confirmOuting(comment: string | null): Promise<void> {
-  const row = outingTarget.value
+  const target = outingTarget.value
   outingTarget.value = null
-  if (!row) return
+  if (!target) return
+  const { row, exceptionConfirmed } = target
   await runRowAction(row, async () => {
-    // A person who already went out today needs the exception confirmed first.
-    // A list that is out of date can still hit the server's rule, so that
-    // answer is handled too.
-    let confirmed = false
-    if (row.outings_today >= 1) {
-      if (!(await askForException())) return
-      confirmed = true
-    }
+    // A list that is out of date can still hit the server's once-a-day rule,
+    // so that answer is handled too.
     try {
-      await startOuting(row.stay_id, comment, confirmed)
+      await startOuting(row.stay_id, comment, exceptionConfirmed)
     } catch (error) {
-      if (confirmed || !isApiError(error, 'outing_exception_needs_confirmation')) throw error
+      if (exceptionConfirmed || !isApiError(error, 'outing_exception_needs_confirmation')) throw error
       if (!(await askForException())) return
       await startOuting(row.stay_id, comment, true)
     }
@@ -137,7 +138,7 @@ async function confirmCheckOut(exitDate: string): Promise<void> {
       @check-out="openCheckOut"
     />
     <OutingStartDialog
-      :name="outingTarget?.full_name ?? null"
+      :name="outingTarget?.row.full_name ?? null"
       @confirm="confirmOuting"
       @cancel="outingTarget = null"
     />
