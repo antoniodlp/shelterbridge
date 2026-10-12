@@ -142,17 +142,20 @@ async function savePhoneStatus(stayId: string, status: PhoneStatus): Promise<voi
       </template>
     </PageHeader>
     <HeadcountBar :summary="counts" class="mb-3" />
-    <div class="mb-3 residents-search">
-      <label for="residents-search" class="form-label">{{ t('residents.search.label') }}</label>
-      <input
-        id="residents-search"
-        v-model="query"
-        type="search"
-        class="form-control"
-        :placeholder="t('residents.search.placeholder')"
-        autocomplete="off"
-      />
+    <div class="mb-3 residents-search form-inline">
+        <div class="input-group">
+          <div class="input-group-text">🔍</div>
+          <input
+            id="residents-search"
+            v-model="query"
+            type="search"
+            class="form-control"
+            :placeholder="t('residents.search.placeholder')"
+            autocomplete="off"
+          />
+        </div>
     </div>
+    
     <ResidentsGrid
       :rows="rows"
       @start-outing="openOuting"
