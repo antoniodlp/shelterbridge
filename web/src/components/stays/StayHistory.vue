@@ -23,9 +23,7 @@ const catalogs = useCatalogsStore()
         <tr>
           <th scope="col">{{ t('stays.history.entry') }}</th>
           <th scope="col">{{ t('stays.history.exit') }}</th>
-          <th scope="col">{{ t('stays.history.bed') }}</th>
           <th scope="col">{{ t('stays.history.caseType') }}</th>
-          <th scope="col">{{ t('stays.history.phone') }}</th>
           <th scope="col">{{ t('stays.history.notes') }}</th>
           <th v-if="canEdit" scope="col">
             <span class="visually-hidden">{{ t('stays.history.actions') }}</span>
@@ -39,9 +37,7 @@ const catalogs = useCatalogsStore()
             <span v-if="stay.exit_date">{{ formatDate(stay.exit_date) }}</span>
             <span v-else class="badge text-bg-success">{{ t('stays.history.open') }}</span>
           </td>
-          <td>{{ stay.bed }}</td>
           <td>{{ catalogs.label('case_types', stay.case_type_code) }}</td>
-          <td>{{ t(`phoneStatus.${stay.phone_status}`) }}</td>
           <td class="text-break">{{ stay.notes }}</td>
           <td v-if="canEdit" class="text-nowrap">
             <button type="button" class="btn btn-sm btn-link" @click="emit('edit', stay)">
