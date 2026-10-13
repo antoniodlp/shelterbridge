@@ -241,9 +241,21 @@ describe('ResidentsView', () => {
     await vi.waitFor(() => expect(wrapper.find('.e-row').text()).toContain('Lucía'), { timeout: 5000 })
   })
 
-  it('links each row to the person record by id only', async () => {
+  it('links the photo, first name and last name to the person record by id only', async () => {
     const { wrapper } = await mountLoaded()
-    expect(wrapper.find(`a[href="/people/${uuid(1)}"]`).text()).toBe('Ver ficha')
+    const links = rowFor(wrapper, 'Rosa Elena').findAll(`a[href="/people/${uuid(1)}"]`)
+    expect(links).toHaveLength(3)
+    expect(links[0].find('img').exists()).toBe(true)
+    expect(links[1].text()).toBe('Rosa Elena')
+    expect(links[2].text()).toBe('Pérez Lara')
+    expect(wrapper.text()).not.toContain('Ver ficha')
+  })
+
+  it('opens the person record from the name', async () => {
+    const { wrapper, router } = await mountLoaded()
+    const name = rowFor(wrapper, 'Tomás').findAll('a').find((link) => link.text() === 'Tomás')
+    await name?.trigger('click')
+    await vi.waitFor(() => expect(router.currentRoute.value.fullPath).toBe(`/people/${uuid(2)}`))
   })
 
   it('uses the adaptive grid layout on narrow screens', async () => {

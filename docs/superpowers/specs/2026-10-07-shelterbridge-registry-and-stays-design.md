@@ -450,6 +450,7 @@ If the newest stay was checked out today by mistake, any role can reopen it from
 
 - **Headcount bar:** total residents, inside, outside, minors, and unaccompanied minors.
 - **Grid columns:** thumbnail, first name, last name, age (in red for minors), carer ("Acompañamiento": the carer's name when the carer is staying too, plus the unaccompanied-minor badge), bed, entry date, days in shelter, presence badge, out since, phone status, and actions. Filtering, sorting and quick search are client-side.
+- **Opening the record:** the thumbnail, first name and last name link to `/people/:id`. The thumbnail link is left out of the tab order and hidden from screen readers, since the name links lead to the same place.
 - **In-cell edits:** the bed is a text field in its cell and the phone status a select. The bed saves when the field is left or on Enter, if it changed (Escape restores it); the phone status saves as soon as another option is picked. Both update `stays` through `api/` with the stay's `updated_at` from the last load, so a stay changed on another computer fails with `stale_record`. Like the row actions, each save holds the one-action-at-a-time lock and reloads the list afterwards, so the cell then shows what is saved.
 - **Row actions:**
   - **Salida / Regreso** (outing / return) toggles according to presence.
@@ -458,7 +459,6 @@ If the newest stay was checked out today by mistake, any role can reopen it from
   - **Egreso** (check-out) opens a dialog with the exit date (default today) and warnings:
     - `phone_status = 'in_custody'` shows "devolver el teléfono" (return the phone);
     - `presence = 'outside'` shows "se registrará como salió y no regresó" (it will be recorded as left and did not return).
-  - **Ver ficha** (view record) opens `/people/:id`.
 
 ### 9.5 Merge (admin)
 

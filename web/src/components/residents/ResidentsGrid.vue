@@ -86,27 +86,40 @@ const filterSettings = { type: 'CheckBox' }
         :allow-filtering="false"
         :template="'photo'"
       >
+        <!-- The name links already lead to the record, so this one stays out of the tab order and screen readers. -->
         <template #photo="{ data }">
-          <PersonThumb :url="data.thumb_url" :name="data.full_name" />
+          <RouterLink :to="{ name: 'person', params: { id: data.person_id } }" tabindex="-1" aria-hidden="true">
+            <PersonThumb :url="data.thumb_url" :name="data.full_name" />
+          </RouterLink>
         </template>
       </e-column>
       <e-column
         field="first_name"
         :header-text="t('residents.columns.firstName')"
         width="130"
-        :allow-filtering="false"
-      />
+        :allow-filtering="true"
+        :template="'firstname'"
+      >
+        <template #firstname="{ data }">
+          <RouterLink class="link-dark text-decoration-none" :to="{ name: 'person', params: { id: data.person_id } }">{{ data.first_name }}</RouterLink>
+        </template>
+      </e-column>
       <e-column
         field="last_name"
         :header-text="t('residents.columns.lastName')"
         width="130"
-        :allow-filtering="false"
-      />
+        :allow-filtering="true"
+        :template="'lastname'"
+      >
+        <template #lastname="{ data }">
+          <RouterLink class="link-dark text-decoration-none" :to="{ name: 'person', params: { id: data.person_id } }">{{ data.last_name }}</RouterLink>
+        </template>
+      </e-column>
       <e-column
         field="age"
         :header-text="t('residents.columns.age')"
         width="70"
-        :allow-filtering="false"
+        :allow-filtering="true"
         :template="'age'"
       >
         <template #age="{ data }">
@@ -117,7 +130,7 @@ const filterSettings = { type: 'CheckBox' }
         field="carer_name"
         :header-text="t('residents.columns.unaccompanied')"
         width="170"
-        :allow-filtering="false"
+        :allow-filtering="true"
         :template="'carer'"
       >
         <template #carer="{ data }">
@@ -240,9 +253,6 @@ const filterSettings = { type: 'CheckBox' }
             >
               {{ t('stays.checkOut.action') }}
             </button>
-            <RouterLink class="btn btn-sm btn-link" :to="{ name: 'person', params: { id: data.person_id } }">{{
-              t('residents.viewRecord')
-            }}</RouterLink>
           </div>
         </template>
       </e-column>
