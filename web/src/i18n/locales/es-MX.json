@@ -105,8 +105,8 @@
   "residents": {
     "refresh": "Actualizar",
     "search": {
-      "label": "Buscar por nombre o cama",
-      "placeholder": "Nombre o cama"
+      "label": "Buscar por nombre",
+      "placeholder": "Nombre"
     },
     "headcount": {
       "label": "Conteo de personas",

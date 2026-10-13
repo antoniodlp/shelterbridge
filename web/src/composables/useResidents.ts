@@ -56,12 +56,10 @@ export function countResidents(residents: CurrentResident[]): HeadcountSummary {
   }
 }
 
-export function matchesQuery(row: Pick<ResidentRow, 'full_name' | 'bed'>, query: string): boolean {
+export function matchesQuery(row: Pick<ResidentRow, 'full_name'>, query: string): boolean {
   const needle = normalizeForSearch(query)
   if (!needle) return true
-  return (
-    normalizeForSearch(row.full_name).includes(needle) || normalizeForSearch(row.bed).includes(needle)
-  )
+  return normalizeForSearch(row.full_name).includes(needle)
 }
 
 export function useResidents() {

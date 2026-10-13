@@ -232,13 +232,15 @@ describe('ResidentsView', () => {
     await vi.waitFor(() => expect(rosaSalida().disabled).toBe(false), { timeout: 5000 })
   })
 
-  it('filters by name or bed, ignoring accents and case', async () => {
+  it('filters by name only, ignoring accents and case', async () => {
     const { wrapper } = await mountLoaded()
-    await wrapper.find('#residents-search').setValue('perez')
+    const search = wrapper.find('#residents-search')
+    expect(search.attributes('aria-label')).toBe('Buscar por nombre')
+    await search.setValue('perez')
     await vi.waitFor(() => expect(wrapper.findAll('.e-row')).toHaveLength(1), { timeout: 5000 })
     expect(wrapper.find('.e-row').text()).toContain('Rosa Elena')
-    await wrapper.find('#residents-search').setValue('c1')
-    await vi.waitFor(() => expect(wrapper.find('.e-row').text()).toContain('Lucía'), { timeout: 5000 })
+    await search.setValue('c1')
+    await vi.waitFor(() => expect(wrapper.findAll('.e-row')).toHaveLength(0), { timeout: 5000 })
   })
 
   it('links the photo, first name and last name to the person record by id only', async () => {

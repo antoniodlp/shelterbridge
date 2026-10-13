@@ -151,6 +151,7 @@ async function savePhoneStatus(stayId: string, status: PhoneStatus): Promise<voi
             type="search"
             class="form-control"
             :placeholder="t('residents.search.placeholder')"
+            :aria-label="t('residents.search.label')"
             autocomplete="off"
           />
         </div>

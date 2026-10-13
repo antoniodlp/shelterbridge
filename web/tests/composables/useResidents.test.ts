@@ -29,8 +29,8 @@ describe('matchesQuery', () => {
     expect(matchesQuery(row, 'ROSA ELENA')).toBe(true)
   })
 
-  it('matches the bed', () => {
-    expect(matchesQuery(row, 'a1')).toBe(true)
+  it('ignores the bed', () => {
+    expect(matchesQuery(row, 'a1')).toBe(false)
   })
 
   it('treats a blank query as a match', () => {

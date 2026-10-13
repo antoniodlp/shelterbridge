@@ -75,6 +75,6 @@ export async function registerPerson(
 export async function residentRow(page: Page, name: string): Promise<Locator> {
   await page.goto('/residents')
   await dismissLicenseBanner(page)
-  await page.getByLabel('Buscar por nombre o cama').fill(name)
+  await page.getByLabel('Buscar por nombre').fill(name)
   return page.getByRole('row').filter({ hasText: name })
 }
